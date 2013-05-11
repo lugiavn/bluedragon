@@ -1,0 +1,15 @@
+
+
+# MATLAB DATA 
+*.mat
+*.txt
+*.xml
+
+# Video
+*.avi
+*.mp4
+
+# misc
+*.doc
+*~
+
