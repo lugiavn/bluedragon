@@ -22,7 +22,7 @@ m.params.T                      = 1000;
 m.params.compute_terminal_joint = 0;
 m.params.downsample_ratio       = 7;
 m.params.duration_var_scale     = 5;
-m.params.use_start_conditions   = 1;
+m.params.use_start_conditions   = 0;
 
 
 duration_mean = 30 / m.params.downsample_ratio;
@@ -33,7 +33,7 @@ if 1
         m.params.trick.fakedummystep(i,:) = [0 m.params.trick.fakedummystep(i-1,1:end-1)];
     end
 end
-%m.params.trick.fakedummystep    = NaN;
+m.params.trick.fakedummystep    = NaN;
 
 
 m.start_conditions              = ones(length(m.grammar.symbols), m.params.T);
@@ -102,9 +102,11 @@ end
 
 %% set up inference struct
 for i=1:length(m.g)
-    m.g(i).i_forward  = struct;
-    m.g(i).i_backward = struct;
-    m.g(i).i_final    = struct;
+    m.g(i).i_forward    = struct;
+    m.g(i).i_backward   = struct;
+    m.g(i).i_final      = struct;
+    m.g(i).start_rs_id	= nan;
+    m.g(i).end_rs_id    = nan;
 end
 
 %% set up root
@@ -114,6 +116,7 @@ m.g(m.s).start_distribution        = 0 * ones(1, m.params.T) / m.params.T;
 m.g(m.s).start_distribution(1:100) = 1 / 100;
 
 m.g(m.s).end_likelihood            = 1 * ones(1, m.params.T) / m.params.T;
+m.g(m.s).end_likelihood(1:200)     = 0;
 
 %% set up detection result
 for i=unique([m.g.detector_id])

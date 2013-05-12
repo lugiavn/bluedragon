@@ -4,7 +4,7 @@ close all;
 
 m = gen_inference_net('../s/model');
 
-rs = create_resolution_structure(m.params.T, 500, 1.05, 15);
+rs = create_resolution_structure(m.params.T, 100, 1.1, 30);
 
 
 %% convert%
@@ -26,9 +26,9 @@ disp full_inference_time
 toc
 
 %% draw
-DRAW_START_DISTRIBUTION = {'Body', 'Nose_A', 'Wing_AT', 'Tail_AT'};
+DRAW_START_DISTRIBUTION = {'Body', 'Nose_A', 'Wing_AT', 'tail_at2'};
 %DRAW_START_DISTRIBUTION = {'Body', 'wing_at1', 'wing_at2', 'wing_at3', 'tail_at1'};
-DRAW_END_DISTRIBUTION   = {};
+DRAW_END_DISTRIBUTION   = {'S'};
 nx_figure(1);
 m_plot_distributions(m, DRAW_START_DISTRIBUTION, DRAW_END_DISTRIBUTION);
 nx_figure(2);
