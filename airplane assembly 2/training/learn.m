@@ -20,7 +20,10 @@ pause; clc;
 
 
 %% learn duration
-learn_duration  
+disp ==========================================================
+disp 'train action duration'
+disp ==========================================================
+grammar = grammar_learn_duration(grammar, label);
 disp 'learning duration finished'
 disp 'press enter'
 pause; clc;

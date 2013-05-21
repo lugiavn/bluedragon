@@ -1,13 +1,18 @@
 
-disp ==========================================================
-disp 'train action duration'
-disp ==========================================================
+function grammar = grammar_learn_duration(grammar, segment_label_sequences)
+
+% single sequence
+if ~iscell(segment_label_sequences)
+    segment_label_sequences = {segment_label_sequences};
+end
+
 
 grammar.symbols(1).duration_data = [];
 
-for i=1:length(label)
+for i=1:length(segment_label_sequences)
+for j=1:length(segment_label_sequences{i})
     
-    l = label(i);
+    l = segment_label_sequences{i}(i);
     
     if strcmp(l.name, 'start') || strcmp(l.name, 'end')
         continue;
@@ -17,6 +22,7 @@ for i=1:length(label)
     
     grammar.symbols(symbolid).duration_data(:,end+1) = l.end - l.start + 1;
 
+end
 end
 
 for i=1:length(grammar.symbols)

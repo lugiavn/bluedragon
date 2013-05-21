@@ -158,21 +158,21 @@ while t < m.params.T * m.params.downsample_ratio & t < 6000
         end
         
         % VRTS
-        if ~exist('vrts_m')
+%         if ~exist('vrts_m')
             vrts_m = m_convert_by_rs(m, create_resolution_structure(m.params.T, nt, 1.05, 15));
-        elseif abs(vrts_m.rs.center_point - nt) > 30
-            vrts_m = m_convert_by_rs(m, create_resolution_structure(m.params.T, nt+29, 1.05, 15));
-        else % update detections & start_conditions
-            for i=1:length(m.detection.result)
-                if ~isempty(m.detection.result{i})
-                    vrts_m.detection.result{i} = vrts_downsample_mat(m.detection.result{i}, vrts_m.rs, vrts_m.rs, 1, 1, 0);
-                end
-            end
-            for i=1:size(m.start_conditions,1)
-                vrts_m.start_conditions(i,:) = vrts_downsample_probability(m.start_conditions(i,:), vrts_m.rs);
-            end
-        end
-        tic
+%         elseif abs(vrts_m.r_settings.rs{1}.center_point - nt) > 30
+%             vrts_m = m_convert_by_rs(m, create_resolution_structure(m.params.T, nt+29, 1.05, 15));
+%         else % update detections & start_conditions
+%             for i=1:length(m.detection.result)
+%                 if ~isempty(m.detection.result{i})
+%                     vrts_m.detection.result{i} = vrts_downsample_mat(m.detection.result{i}, vrts_m.rs, vrts_m.rs, 1, 1, 0);
+%                 end
+%             end
+%             for i=1:size(m.start_conditions,1)
+%                 vrts_m.start_conditions(i,:) = vrts_downsample_probability(m.start_conditions(i,:), vrts_m.rs);
+%             end
+%         end
+%         tic
         vrts_m = m_inference_v3(vrts_m);
         disp m_inference_v3(vrts_m)
         toc;

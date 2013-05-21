@@ -4,7 +4,10 @@ close all;
 
 m = gen_inference_net('../s/model');
 
-rs = create_resolution_structure(m.params.T, 100, 1.1, 30);
+m.params.use_start_conditions   = 1;
+m.start_conditions(:,1:300)     = 0;
+
+rs = create_resolution_structure(m.params.T, 300, 1.1, 30);
 
 
 %% convert%
@@ -31,6 +34,8 @@ DRAW_START_DISTRIBUTION = {'Body', 'Nose_A', 'Wing_AT', 'tail_at2'};
 DRAW_END_DISTRIBUTION   = {'S'};
 nx_figure(1);
 m_plot_distributions(m, DRAW_START_DISTRIBUTION, DRAW_END_DISTRIBUTION);
+ylim([0 .1])
 nx_figure(2);
 m_plot_distributions(new_m, DRAW_START_DISTRIBUTION, DRAW_END_DISTRIBUTION);
+ylim([0 .1])
 

@@ -47,8 +47,15 @@ for i=1:length(m.grammar.symbols)
         
         duration_mean = m.grammar.symbols(i).learntparams.duration_mean / m.params.downsample_ratio;
         duration_var  = m.params.duration_var_scale * m.grammar.symbols(i).learntparams.duration_var / m.params.downsample_ratio^2;
+        duration      = nxmakegaussian(m.params.T, duration_mean, duration_var);
+        duration_mat   = zeros(m.params.T,m.params.T);
         
-        [m.grammar.symbols(i).duration_vec, m.grammar.symbols(i).duration_mat] = make_duration_mat(duration_mean, duration_var, m.params.T);
+        for j=1:m.params.T
+            duration_mat(j,j:end) = duration(1:m.params.T-j+1);
+        end
+        
+        m.grammar.symbols(i).duration_vec = duration;
+        m.grammar.symbols(i).duration_mat = duration_mat;
         
         % integral
         m.grammar.symbols(i).duration_mat_integral = zeros(m.params.T + 1);
@@ -123,14 +130,21 @@ return;
 end
 
 
-function [duration duration_mat] = make_duration_mat(mean, var, T)
+function duration_mat = make_duration_mat(mean, var, T, just_vector)
 
-duration = nxmakegaussian(T, mean, var);
+if ~exist('just_vector')
+    just_vector = 0;
+end
 
-if nargout > 1
+duration      = nxmakegaussian(T, mean, var);
+
+if just_vector
+    
+    duration_mat  = duration;
+else
     duration_mat  = zeros(T, T);
-    for j=1:T
-        duration_mat(j,j:end) = duration(1:T-j+1);
+    for j=1:m.params.T
+        duration_mat(j,j:end) = duration(1:m.params.T-j+1);
     end
 end
 

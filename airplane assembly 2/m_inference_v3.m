@@ -6,10 +6,7 @@ function m = m_inference_v3( m )
     
     % compute P(end | start) * P( Z | start, end)
     for i=1:length(m.g)
-        if m.g(i).is_terminal,
-            
-            assert(m.g(i).detector_id > 0);
-            
+        if m.g(i).is_terminal
             if isfield(m, 'r_settings')
             	m.g(i).obv_duration_likelihood = ...
                     m.r_settings.transform_rs_duration{m.g(i).id, m.g(i).start_rs_id, m.g(i).end_rs_id} .* ...
@@ -22,12 +19,10 @@ function m = m_inference_v3( m )
     
 
     % forward phase
-    %m.if.g = m.g;
     m.g(m.s).i_forward.start_distribution = m.g(m.s).start_distribution;
     m = forward_phase(m, m.s);
     
     % backward phase
-    %m.ib.g = m.g;
     m.g(m.s).i_backward.end_likelihood = m.g(m.s).end_likelihood;
     m = backward_phase(m, m.s);
 
@@ -103,7 +98,6 @@ function m = forward_phase( m , gid )
     % compute g.i_forward.end_distribution
     
     g = m.g(gid);
-                         
     
     if ~isreal(g.i_forward.start_distribution(1))
         assert(0);
@@ -111,7 +105,12 @@ function m = forward_phase( m , gid )
     
     %% intergrate start condition
     if m.params.use_start_conditions,
-        g.i_forward.start_distribution  = start_condition_probability_forward(g.i_forward.start_distribution , m.start_conditions(g.id,:));
+        
+        if isfield(m, 'r_settings')
+            g.i_forward.start_distribution  = start_condition_probability_forward(g.i_forward.start_distribution , m.r_settings.start_conditions_rs{gid,g.start_rs_id});
+        else
+            g.i_forward.start_distribution  = start_condition_probability_forward(g.i_forward.start_distribution , m.start_conditions(g.id,:));
+        end
         
         if ~isnan(m.params.trick.fakedummystep(1)) & g.is_terminal
             if size(m.params.trick.fakedummystep, 1) == 1
@@ -148,15 +147,15 @@ function m = forward_phase( m , gid )
         
         g.i_forward.log_pZ   = 0;
         
-        for i=1:length(g.prule)
-            m.g(g.prule(i)).i_forward.start_distribution = rs_transform(m, current_distribution, current_rs_id, m.g(g.prule(i)).start_rs_id);
+        for i=g.prule
+            m.g(i).i_forward.start_distribution = rs_transform(m, current_distribution, current_rs_id, m.g(i).start_rs_id);
             
-            m = forward_phase(m, g.prule(i));
+            m = forward_phase(m, i);
             
-            g.i_forward.log_pZ = g.i_forward.log_pZ + m.g(g.prule(i)).i_forward.log_pZ;
+            g.i_forward.log_pZ = g.i_forward.log_pZ + m.g(i).i_forward.log_pZ;
             
-            current_distribution = m.g(g.prule(i)).i_forward.end_distribution;
-            current_rs_id        = m.g(g.prule(i)).end_rs_id;
+            current_distribution = m.g(i).i_forward.end_distribution;
+            current_rs_id        = m.g(i).end_rs_id;
         end
         
         
@@ -166,9 +165,9 @@ function m = forward_phase( m , gid )
     else   
     %% or rule 
     
-        for i=1:length(g.prule)
-            m.g(g.prule(i)).i_forward.start_distribution = rs_transform(m, g.i_forward.start_distribution, g.start_rs_id, m.g(g.prule(i)).start_rs_id);
-            m = forward_phase(m, g.prule(i));
+        for i=g.prule
+            m.g(i).i_forward.start_distribution = rs_transform(m, g.i_forward.start_distribution, g.start_rs_id, m.g(i).start_rs_id);
+            m = forward_phase(m, i);
         end
         
         
@@ -179,20 +178,17 @@ function m = forward_phase( m , gid )
             g.i_forward.end_distribution = zeros(1, m.params.T);
         end
         
-        for i=1:length(g.prule)
+        for i=g.prule
             g.i_forward.end_distribution = g.i_forward.end_distribution + ...
-                m.g(g.prule(i)).or_orweight * ...
-                exp(m.g(g.prule(i)).i_forward.log_pZ + m.g(g.prule(i)).or_log_othersnull_likelihood) * ...
-                rs_transform(m, m.g(g.prule(i)).i_forward.end_distribution, m.g(g.prule(i)).end_rs_id, g.end_rs_id);
+                m.g(i).or_orweight * ...
+                exp(m.g(i).i_forward.log_pZ + m.g(i).or_log_othersnull_likelihood) * ...
+                rs_transform(m, m.g(i).i_forward.end_distribution, m.g(i).end_rs_id, g.end_rs_id);
         end
         
         g.i_forward.log_pZ = log(sum(g.i_forward.end_distribution));
         g.i_forward.end_distribution = g.i_forward.end_distribution / sum(g.i_forward.end_distribution);
     end
 
-    if ~isreal(g.i_forward.end_distribution(1))
-        assert(0);
-    end
     
     m.g(gid) = g;
 
@@ -235,7 +231,11 @@ function m = backward_phase( m, gid )
             
             % start condition
             if m.params.use_start_conditions,
-                current_likelihood = start_condition_likelihood_backward(current_likelihood, m.start_conditions(m.g(i).id,:));
+                if ~isfield(m, 'r_settings')    
+                	current_likelihood = start_condition_likelihood_backward(current_likelihood, m.start_conditions(m.g(i).id,:));
+                else
+                    current_likelihood = start_condition_likelihood_backward(current_likelihood, m.r_settings.start_conditions_rs{m.g(i).id, current_rs_id});
+                end
             end
         end
         
@@ -257,21 +257,30 @@ function m = backward_phase( m, gid )
             g.i_backward.start_likelihood = zeros(1, m.params.T);
         end
         
-        for i=g.prule
-            g.i_backward.start_likelihood = g.i_backward.start_likelihood  + ...
-                m.g(i).or_orweight * ...
-                exp(m.g(i).or_log_othersnull_likelihood) * ...
-                rs_transform_likelihood(m, m.g(i).i_backward.start_likelihood, m.g(i).start_rs_id, g.start_rs_id);
+        if ~m.params.use_start_conditions,
+            for i=g.prule
+                g.i_backward.start_likelihood = g.i_backward.start_likelihood  + ...
+                    m.g(i).or_orweight * ...
+                    exp(m.g(i).or_log_othersnull_likelihood) * ...
+                    rs_transform_likelihood(m, m.g(i).i_backward.start_likelihood, m.g(i).start_rs_id, g.start_rs_id);
+            end
         end
-        
-        % start condition
-        if m.params.use_start_conditions,
+        if m.params.use_start_conditions && ~isfield(m, 'r_settings'),
             g.i_backward.start_likelihood = zeros(1, m.params.T);
             for i=g.prule
                 g.i_backward.start_likelihood = g.i_backward.start_likelihood  + ...
                     m.g(i).or_orweight * ...
                     exp(m.g(i).or_log_othersnull_likelihood) * ...
                     start_condition_likelihood_backward(m.g(i).i_backward.start_likelihood, m.start_conditions(m.g(i).id,:));
+            end
+        end
+        if m.params.use_start_conditions && isfield(m, 'r_settings'),
+            for i=g.prule
+                g.i_backward.start_likelihood = g.i_backward.start_likelihood  + ...
+                    m.g(i).or_orweight * ...
+                    exp(m.g(i).or_log_othersnull_likelihood) * ...
+                    rs_transform_likelihood(m, start_condition_likelihood_backward(m.g(i).i_backward.start_likelihood, m.r_settings.start_conditions_rs{m.g(i).id, m.g(i).start_rs_id}), m.g(i).start_rs_id, g.start_rs_id);
+                   
             end
         end
     end
@@ -340,52 +349,46 @@ function symbols = calculate_symbol_distribution(m, symbols)
 %   Detailed explanation goes here
 
 
-    for i=1:length(symbols)
-        
+    for i=1:length(symbols) 
         symbols(i).start_distribution = zeros(1, m.params.T); % todo
         symbols(i).end_distribution   = zeros(1, m.params.T); % todo
-        
-        for g=m.g
-            if g.id == i
-                
-                sd = g.i_final.start_distribution * g.i_final.prob_notnull;
-                ed = g.i_final.end_distribution * g.i_final.prob_notnull;
-                
-                if isfield (m, 'r_settings')
-                    sd = vrts_upsample_probability(sd,  m.r_settings.rs{g.start_rs_id});
-                    ed = vrts_upsample_probability(ed,  m.r_settings.rs{g.end_rs_id});
-                end
-                
-                symbols(i).start_distribution = symbols(i).start_distribution + sd;
-                symbols(i).end_distribution   = symbols(i).end_distribution + ed;
-            end
-        end
-        
     end
+    
+    for g=m.g
+
+        sd = g.i_final.start_distribution * g.i_final.prob_notnull;
+        ed = g.i_final.end_distribution * g.i_final.prob_notnull;
+
+        if isfield (m, 'r_settings')
+            sd = vrts_upsample_probability(sd,  m.r_settings.rs{g.start_rs_id});
+            ed = vrts_upsample_probability(ed,  m.r_settings.rs{g.end_rs_id});
+        end
+
+        symbols(g.id).start_distribution = symbols(g.id).start_distribution + sd;
+        symbols(g.id).end_distribution   = symbols(g.id).end_distribution + ed;
+    end
+        
 
 end
 %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 function v = rs_transform(m, v, rs_from_id, rs_to_id)
-try
-    if ~isnan(rs_from_id) && ~isnan(rs_to_id)
+    if rs_from_id == rs_to_id
+        return;
+    elseif ~isnan(rs_from_id) && ~isnan(rs_to_id)
         v = v * m.r_settings.transform_rs{rs_from_id, rs_to_id};
     end
-catch
-    gogo = 1;
-end
 end
 
 
 function v = rs_transform_likelihood(m, v, rs_from_id, rs_to_id)
-try
-    if ~isnan(rs_from_id) && ~isnan(rs_to_id)
+
+    if rs_from_id == rs_to_id
+        return;
+    elseif ~isnan(rs_from_id) && ~isnan(rs_to_id)
         v = v * m.r_settings.transform_rs{rs_to_id, rs_from_id}';
     end
-catch
-    gogo = 1;
-end
 end
 
 
