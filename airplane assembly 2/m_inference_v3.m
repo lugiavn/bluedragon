@@ -3,6 +3,9 @@ function m = m_inference_v3( m )
 %   Detailed explanation goes here
 
     m = compute_null_likelihood(m, m.s);
+%     for i=1:length(m.g)
+%         m.g(i).or_log_othersnull_likelihood = 0;
+%     end;
     
     % compute P(end | start) * P( Z | start, end)
     for i=1:length(m.g)
@@ -20,15 +23,21 @@ function m = m_inference_v3( m )
 
     % forward phase
     m.g(m.s).i_forward.start_distribution = m.g(m.s).start_distribution;
+    if isfield(m, 'r_settings')
+        m.g(m.s).i_forward.start_distribution = m.r_settings.start_distribution;
+    end
     m = forward_phase(m, m.s);
     
     % backward phase
     m.g(m.s).i_backward.end_likelihood = m.g(m.s).end_likelihood;
+    if isfield(m, 'r_settings')
+        m.g(m.s).i_backward.end_likelihood = m.r_settings.end_likelihood;
+    end
     m = backward_phase(m, m.s);
 
     % merge forward & backward
     for i=1:length(m.g)
-        
+        try
         g = m.g(i);
         
         g.i_final.end_distribution   = g.i_forward.end_distribution .* g.i_backward.end_likelihood;
@@ -40,6 +49,9 @@ function m = m_inference_v3( m )
         assert(isreal(g.i_final.start_distribution(1)));
         
         m.g(i) = g;
+        catch
+            disp(sprintf('merge forward & backward fail for g %d', i));
+        end
     end
     
     
@@ -99,7 +111,8 @@ function m = forward_phase( m , gid )
     
     g = m.g(gid);
     
-    if ~isreal(g.i_forward.start_distribution(1))
+    if ~isreal(g.i_forward.start_distribution(1)) || isnan(g.i_forward.start_distribution(1))
+        disp(gid);
         assert(0);
     end
     
@@ -189,6 +202,11 @@ function m = forward_phase( m , gid )
         g.i_forward.end_distribution = g.i_forward.end_distribution / sum(g.i_forward.end_distribution);
     end
 
+    % for debug
+    if isfield(m, 'r_settings')
+        g.i_forward.start_debug = vrts_upsample_probability(g.i_forward.start_distribution, m.r_settings.rs{g.start_rs_id});
+        g.i_forward.end_debug   = vrts_upsample_probability(g.i_forward.end_distribution, m.r_settings.rs{g.end_rs_id});
+    end
     
     m.g(gid) = g;
 
@@ -213,7 +231,8 @@ function m = backward_phase( m, gid )
         g.i_backward.start_likelihood = g.i_backward.end_likelihood * g.obv_duration_likelihood';
         
         if m.params.compute_terminal_joint
-            g.joint2 = g.obv_duration_likelihood .* repmat(g.i_backward.end_likelihood, [m.params.T 1]);
+            %g.i_backward.joint2 = g.obv_duration_likelihood .* repmat(g.i_backward.end_likelihood, [m.params.T 1]);
+            g.i_backward.joint2 = repmat(g.i_backward.end_likelihood, [m.params.T 1]);
         end
         
     elseif g.andrule
@@ -286,7 +305,20 @@ function m = backward_phase( m, gid )
     end
 
     
-    %%
+    %% debug
+    if isfield(m, 'r_settings')
+        g.i_backward.start_debug = vrts_upsample_likelihood(g.i_backward.start_likelihood, m.r_settings.rs{g.start_rs_id});
+        g.i_backward.end_debug   = vrts_upsample_likelihood(g.i_backward.end_likelihood, m.r_settings.rs{g.end_rs_id});
+        g.i_backward.start_debug = g.i_backward.start_debug / max(g.i_backward.start_debug);
+        g.i_backward.end_debug   = g.i_backward.end_debug / max(g.i_backward.end_debug);
+        
+        
+%         plot(g.i_backward.end_debug);
+%         hold on; plot(g.i_backward.start_debug, 'r'); hold off;
+    else
+%         plot(g.i_backward.end_likelihood / max(g.i_backward.end_likelihood));
+%         hold on; plot(g.i_backward.start_likelihood / max(g.i_backward.start_likelihood), 'r'); hold off;
+    end
     m.g(gid) = g;
 
 end
@@ -374,11 +406,18 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 function v = rs_transform(m, v, rs_from_id, rs_to_id)
+
+try
     if rs_from_id == rs_to_id
         return;
     elseif ~isnan(rs_from_id) && ~isnan(rs_to_id)
         v = v * m.r_settings.transform_rs{rs_from_id, rs_to_id};
     end
+    
+catch
+    gogo = 1;
+end;
+
 end
 
 

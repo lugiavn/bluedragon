@@ -67,7 +67,7 @@ end
 
 onedetector.learnt.mean = mean(onedetector.trainingdata')';
 onedetector.learnt.var  = cov(onedetector.trainingdata') + eye(3) * 0.0001;
-
+onedetector.data        = [];
 
 %% train average detection score
 
@@ -102,6 +102,8 @@ if detectors(d).exist == 1
         
         if params.use_onedetector
             dr(end+1) = mvnpdf(closest_hand, onedetector.learnt.mean, params.detector_var_scale * onedetector.learnt.var);
+            
+            onedetector.data(:,end+1) = closest_hand;
         else
             dr(end+1) = mvnpdf(closest_hand, detectors(d).learnt.mean, params.detector_var_scale * detectors(d).learnt.var);
         end

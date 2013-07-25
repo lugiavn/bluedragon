@@ -14,13 +14,13 @@ MAX_NAME_LENGTH     = 20; % must match ROS node param
 DO_INFERENCE             = 1;
 SEND_INFERENCE_TO_ROS    = 1;
 DRAW_DISTRIBUTION_FIGURE = 99;
-DRAW_START_DISTRIBUTION  = {'Body', 'body1','body2', 'nose_a1', 'Wing_AT', 'tail_at1', 'tail_at2', 'tail_at3'};
+DRAW_START_DISTRIBUTION  = {'Body', 'body1','body2', 'nose_a1', 'nose_a2', 'Wing_AT', 'tail_at1', 'tail_at2', 'tail_at3'};
 %DRAW_START_DISTRIBUTION  = {'space', 'body1', 'body2', 'body3', 'body4', 'body5', 'body6'};
 %DRAW_START_DISTRIBUTION  = {'Nose_A', 'Wing_AD', 'Tail_AT'};
 DRAW_END_DISTRIBUTION    = {'S'};
 
-DRAW_POSITIONS_FIGURE    = 22;
-DRAW_DETECTIONS_FIGURE   = 25;
+DRAW_POSITIONS_FIGURE    = 0;
+DRAW_DETECTIONS_FIGURE   = 0;
 
 DRAW_CURRENT_ACTION_PROB = 0; % todo
 
@@ -150,37 +150,50 @@ while t < m.params.T * m.params.downsample_ratio & t < 6000
             end
         end
         
-        % plot
-        if DRAW_DISTRIBUTION_FIGURE > 0
-            nx_figure(DRAW_DISTRIBUTION_FIGURE);
-            m_plot_distributions(m, DRAW_START_DISTRIBUTION, DRAW_END_DISTRIBUTION);
-            hold on; plot(nt, 0, '*'); hold off;
+        % VRTS
+        if ~exist('vrts_m')
+            vrts_m = m_convert_by_rs(m, create_resolution_structure(m.params.T, nt, 10, 10));
+        else
+            vrts_m.detection.result = m.detection.result;
+            vrts_m.start_conditions = m.start_conditions;
+            
+%             tic
+%             if randi([1 10]) > 1
+%             for i=1:1
+%                 vrts_m = m_update_rs(vrts_m, nt);
+%                 vrts_m = m_inference_v3(vrts_m);
+%                 nx_figure(DRAW_DISTRIBUTION_FIGURE + 2);
+%                 subplot(2, 2, i);
+%                 m_plot_distributions(vrts_m, DRAW_START_DISTRIBUTION, DRAW_END_DISTRIBUTION);
+%                 hold on; plot(nt, 0, '*'); hold off;
+%             end
+%             end
+%             toc;
+            
+            vrts_m = m_update_rs(vrts_m, nt, 1);
         end
         
-        % VRTS
-%         if ~exist('vrts_m')
-            vrts_m = m_convert_by_rs(m, create_resolution_structure(m.params.T, nt, 1.05, 15));
-%         elseif abs(vrts_m.r_settings.rs{1}.center_point - nt) > 30
-%             vrts_m = m_convert_by_rs(m, create_resolution_structure(m.params.T, nt+29, 1.05, 15));
-%         else % update detections & start_conditions
-%             for i=1:length(m.detection.result)
-%                 if ~isempty(m.detection.result{i})
-%                     vrts_m.detection.result{i} = vrts_downsample_mat(m.detection.result{i}, vrts_m.rs, vrts_m.rs, 1, 1, 0);
-%                 end
-%             end
-%             for i=1:size(m.start_conditions,1)
-%                 vrts_m.start_conditions(i,:) = vrts_downsample_probability(m.start_conditions(i,:), vrts_m.rs);
-%             end
-%         end
-%         tic
+        tic
         vrts_m = m_inference_v3(vrts_m);
         disp m_inference_v3(vrts_m)
         toc;
         if DRAW_DISTRIBUTION_FIGURE > 0
-            nx_figure(DRAW_DISTRIBUTION_FIGURE + 1);
+            nx_figure(DRAW_DISTRIBUTION_FIGURE); subplot(2, 1, 2);
             m_plot_distributions(vrts_m, DRAW_START_DISTRIBUTION, DRAW_END_DISTRIBUTION);
             hold on; plot(nt, 0, '*'); hold off;
+            ylim([0 1]);
         end
+        
+        
+        % plot
+        if DRAW_DISTRIBUTION_FIGURE > 0
+            nx_figure(DRAW_DISTRIBUTION_FIGURE); subplot(2, 1, 1);
+            m_plot_distributions(m, DRAW_START_DISTRIBUTION, DRAW_END_DISTRIBUTION);
+            hold on; plot(nt, 0, '*'); hold off;
+            ylim([0 1]);
+        end
+        % linkaxes([findall(figure(DRAW_DISTRIBUTION_FIGURE), 'type', 'axes')]);
+        pause(1);
     end
     
     

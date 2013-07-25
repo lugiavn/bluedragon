@@ -12,7 +12,7 @@ grammar.symbols(1).duration_data = [];
 for i=1:length(segment_label_sequences)
 for j=1:length(segment_label_sequences{i})
     
-    l = segment_label_sequences{i}(i);
+    l = segment_label_sequences{i}(j);
     
     if strcmp(l.name, 'start') || strcmp(l.name, 'end')
         continue;

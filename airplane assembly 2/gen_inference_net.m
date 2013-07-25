@@ -1,9 +1,23 @@
 
 
-function m = gen_inference_net(model)
+function m = gen_inference_net(model, T, downsample_ratio , uni_start_length, uni_end_length)
 
 if isstr(model)
     load(model);
+end
+
+if ~exist('T')
+    T = 1000;
+end
+
+if ~exist('uni_start_length')
+    uni_start_length = 100;
+end
+if ~exist('uni_end_length')
+    uni_end_length = T;
+end
+if ~exist('downsample_ratio')
+    downsample_ratio = 7;
 end
 
 disp ==========================================================
@@ -18,13 +32,13 @@ if ~exist('model')
 end
 
 m                               = model; clearvars model;
-m.params.T                      = 1000;
-m.params.compute_terminal_joint = 0;
-m.params.downsample_ratio       = 7;
+m.params.T                      = T;
+m.params.compute_terminal_joint = 1;
+m.params.downsample_ratio       = downsample_ratio;
 m.params.duration_var_scale     = 5;
 m.params.use_start_conditions   = 0;
 
-m.params.fake_dummmy_step_before_terminal = 1;
+m.params.fake_dummmy_step_before_terminal = 0;
 
 duration_mean = 30 / m.params.downsample_ratio;
 duration_var  = 400 * m.params.duration_var_scale / m.params.downsample_ratio^2;
@@ -106,11 +120,11 @@ end
 %% set up root
 m.s =  m.grammar.starting;
 
-m.g(m.s).start_distribution        = 0 * ones(1, m.params.T) / m.params.T;
-m.g(m.s).start_distribution(1:100) = 1 / 100;
+m.g(m.s).start_distribution                     = 0 * ones(1, m.params.T) / m.params.T;
+m.g(m.s).start_distribution(1:uni_start_length) = 1 / uni_start_length;
 
-m.g(m.s).end_likelihood            = 1 * ones(1, m.params.T) / m.params.T;
-m.g(m.s).end_likelihood(1:200)     = 0;
+m.g(m.s).end_likelihood                             = 0 * ones(1, m.params.T) / m.params.T;
+m.g(m.s).end_likelihood(end-uni_end_length+1:end)   = 1 / uni_end_length;
 
 %% set up detection result
 for i=unique([m.g.detector_id])
@@ -131,12 +145,11 @@ if nargout > 1
     duration_mat  = zeros(T, T);
     for j=1:T
         duration_mat(j,j:end) = duration(1:T-j+1);
+        duration_mat(j,j:end) = duration_mat(j,j:end) / sum(duration_mat(j,j:end));
     end
 end
 
 end
-
-
 
 
 
