@@ -146,6 +146,7 @@ for i=weizmann.testing_ids
     for k=weizmann.training_ids
 
         d = norm(weizmann.samples(i).hist - weizmann.samples(k).hist);
+        d = histogram_intersection(weizmann.samples(i).hist,weizmann.samples(k).hist);
         distances(end+1) = d;
 
         if d < bestDistance
@@ -302,7 +303,7 @@ model.grammar.symbols(1).rule_id        = 1;
 
 model.grammar.rules(1).id      = 1;
 model.grammar.rules(1).left    = 1;
-model.grammar.rules(1).right   = [2 2 2 2 2, 2 2 2 2 2];
+model.grammar.rules(1).right   = [2 2 2 2 2, 2 2 2 2 2, 2 2 2 2 2];
 model.grammar.rules(1).or_rule = 0;
 model.grammar.rules(1).or_prob = [];
 
@@ -329,7 +330,18 @@ for i=unique(weizmann.test.sequence_framelabels)
     model.grammar.rules(2).right(end+1) = length(model.grammar.symbols);
 end
 
-
+% empty 
+%     model.grammar.symbols(end+1).name      = 'N/A';
+%     model.grammar.symbols(end).name        = 'empty';
+%     model.grammar.symbols(end).is_terminal = 1;
+%     model.grammar.symbols(end).detector_id = 99;
+%     
+%     model.grammar.symbols(end).learntparams.duration_mean = 0;
+%     model.grammar.symbols(end).learntparams.duration_var  = 0;
+%     
+%     model.grammar.rules(2).right(end+1) = length(model.grammar.symbols);
+    
+    
 % gen inference structure
 T  = weizmann.test.T;
 Tx = T + 300;
@@ -347,10 +359,12 @@ for j=1:10
     m.detection.result{j} = m.detection.result{j} .^ 2;
     m.detection.result{j} = m.detection.result{j} / mean(m.detection.result{j}(:));
     % m.detection.result{j} = ones(Tx);
-%     nx_figure(j);
-%     imagesc(m.detection.result{j});
+    nx_figure(j);
+    imagesc(m.detection.result{j}); colorbar;
 end
 
+    m.detection.result{99} = eye(Tx);
+    
 % gogogo
 m = m_inference_v3(m);
 
@@ -387,6 +401,23 @@ disp('done')
 nx_figure(112);
 imagesc([ weizmann.test.sequence_framelabels ; segmentation; segmentation2]);
 
+disp('Segmentation accuracy')
 disp(sum(segmentation == weizmann.test.sequence_framelabels) / weizmann.test.T);
 disp(sum(segmentation2 == weizmann.test.sequence_framelabels) / weizmann.test.T);
+
+disp('Log likelihood');
+disp(m.g(1).i_forward.log_pZ);
+
+
+
+
+
+
+
+
+
+
+
+
+
 
