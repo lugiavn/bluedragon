@@ -1,7 +1,7 @@
 
 
 weizmann      = struct;
-weizmann.path = 'D:\myr\datasets\weizman';
+weizmann.path = 'D:\myr\datasets\weizmann';
 
 load classification_masks
 
@@ -84,13 +84,13 @@ feature_vectors = [];
 for i=weizmann.training_ids
     for j=1:size(weizmann.samples(i).distance_transform,3)
         f = weizmann.samples(i).distance_transform(:,:,j);
-        feature_vectors(end+1,:) = f(:)';
+        feature_vectors(:,end+1) = f(:);
     end
 end
 
 
 feature_vectors = uint8(feature_vectors / 100 * 255);
-[C A] = vl_ikmeans(feature_vectors', weizmann.K);
+[C A] = vl_ikmeans(feature_vectors, weizmann.K);
 
 weizmann.C = C;
 
