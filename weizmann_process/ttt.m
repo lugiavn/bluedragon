@@ -147,6 +147,7 @@ for i=weizmann.testing_ids
 
         d = norm(weizmann.samples(i).hist - weizmann.samples(k).hist);
         d = histogram_intersection(weizmann.samples(i).hist,weizmann.samples(k).hist);
+        d = chi_square_statistics(weizmann.samples(i).hist,weizmann.samples(k).hist);
         distances(end+1) = d;
 
         if d < bestDistance
@@ -303,7 +304,7 @@ model.grammar.symbols(1).rule_id        = 1;
 
 model.grammar.rules(1).id      = 1;
 model.grammar.rules(1).left    = 1;
-model.grammar.rules(1).right   = [2 2 2 2 2, 2 2 2 2 2, 2 2 2 2 2];
+model.grammar.rules(1).right   = [2 2 2 2 2, 2 2 2 2 2, 2 2 2 2 2, 2 2 2 2 2];
 model.grammar.rules(1).or_rule = 0;
 model.grammar.rules(1).or_prob = [];
 
@@ -315,7 +316,7 @@ model.grammar.rules(2).id      = 2;
 model.grammar.rules(2).left    = 2;
 model.grammar.rules(2).right   = [];
 model.grammar.rules(2).or_rule = 1;
-model.grammar.rules(2).or_prob = ones(10,1) / 10;
+model.grammar.rules(2).or_prob = ones(11,1) / 11;
 
 for i=unique(weizmann.test.sequence_framelabels)
     
@@ -331,15 +332,15 @@ for i=unique(weizmann.test.sequence_framelabels)
 end
 
 % empty 
-%     model.grammar.symbols(end+1).name      = 'N/A';
-%     model.grammar.symbols(end).name        = 'empty';
-%     model.grammar.symbols(end).is_terminal = 1;
-%     model.grammar.symbols(end).detector_id = 99;
-%     
-%     model.grammar.symbols(end).learntparams.duration_mean = 0;
-%     model.grammar.symbols(end).learntparams.duration_var  = 0;
-%     
-%     model.grammar.rules(2).right(end+1) = length(model.grammar.symbols);
+    model.grammar.symbols(end+1).name      = 'N/A';
+    model.grammar.symbols(end).name        = 'empty';
+    model.grammar.symbols(end).is_terminal = 1;
+    model.grammar.symbols(end).detector_id = 99;
+    
+    model.grammar.symbols(end).learntparams.duration_mean = 0;
+    model.grammar.symbols(end).learntparams.duration_var  = 0;
+    
+    model.grammar.rules(2).right(end+1) = length(model.grammar.symbols);
     
     
 % gen inference structure
@@ -353,7 +354,7 @@ m.g(m.s).end_likelihood(T) = 1;
 % detection
 for j=1:10
     m.detection.result{j} = zeros(Tx);
-    m.detection.result{j}(1:T,1:T) = 1 - weizmann.observation_eudistances{j};
+    m.detection.result{j}(1:T,1:T) = 1.3 - weizmann.observation_eudistances{j};
     m.detection.result{j}(m.detection.result{j} < 10e-5) = 10e-5;
     assert(sum(m.detection.result{j}(:)) > 0);
     m.detection.result{j} = m.detection.result{j} .^ 2;
