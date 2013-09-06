@@ -5,7 +5,7 @@ clear; close all; clc;
 
 disp 'Load dataset and compute distance transform'
 disp '...'
-weizmann = load_weizmann_dataset('D:\myr\datasets\weizmann');
+weizmann = load_weizmann_dataset('.');
 weizmann = resize_masks_and_compute_dt(weizmann);
 
 %play_distance_transform(weizmann);
@@ -79,19 +79,23 @@ load data;
 m = create_m(weizmann);
 
 T  = weizmann.test.T;
-Tx = weizmann.test.T + 300;
+Tx = weizmann.test.T + 1300;
 
 % detection
 for j=1:10
     m.detection.result{j}           = zeros(Tx);
-    m.detection.result{j}(1:T,1:T)  = 2 - weizmann.test.x2_distances{j};
+    m.detection.result{j}(1:T,1:T)  = 1.5 - weizmann.test.x2_distances{j};
     
     m.detection.result{j}(m.detection.result{j} < 10e-5) = 10e-5;
     
     assert(sum(m.detection.result{j}(:)) > 0);
     
     m.detection.result{j} = m.detection.result{j} .^ 2;
-    m.detection.result{j} = m.detection.result{j} / mean(m.detection.result{j}(:));
+    
+    mean_detection        = m.detection.result{j}(1:T,1:T);
+    mean_detection        = mean(mean_detection (:));
+    
+    m.detection.result{j} = m.detection.result{j} / mean_detection;
     % m.detection.result{j} = ones(Tx);
     %nx_figure(j);
     %imagesc(m.detection.result{j}); colorbar;
@@ -112,4 +116,39 @@ nx_figure(112);
 imagesc([ weizmann.test.sequence_framelabels ; segmentation]);
 segmentation_acc = 1 - sum(weizmann.test.sequence_framelabels ~= segmentation) / T;
 disp(['Segmentation accuracy: ' num2str(segmentation_acc)]);
+
+% show happening chance of each symbol
+xxx = zeros(20,1);
+for g=m.g
+    if g.is_terminal
+        xxx(g.id) = xxx(g.id) + g.i_final.prob_notnull;
+    end
+end
+for i=1:length(m.grammar.symbols)
+    if m.grammar.symbols(i).is_terminal
+        
+        disp([m.grammar.symbols(i).name ': ' num2str(xxx(i))]);
+    end
+end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

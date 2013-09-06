@@ -23,7 +23,7 @@ weizmann.label_str2id.walk2 = 8;
 weizmann.label_str2id.wave1 = 9;
 weizmann.label_str2id.wave2 = 10;
 
-load([wz_path '\classification_masks.mat'])
+load([wz_path '/classification_masks.mat'])
 
 samples = fieldnames(aligned_masks);
 

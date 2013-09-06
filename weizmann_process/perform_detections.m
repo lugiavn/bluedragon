@@ -13,15 +13,20 @@ end
     
 for tstart=1:test.T
     disp(tstart)
+    h2 = zeros(1, 100);
     for tend=tstart+1:test.T
 
-        h = zeros(1, 100);
+        h2(test.sequence_frameclustering(tend-1)) = h2(test.sequence_frameclustering(tend-1)) + 1;
         
-        for j = test.sequence_frameclustering(tstart:tend-1)
-            h(j) = h(j) + 1;
-        end
+%         h = zeros(1, 100);
+%         
+%         for j = test.sequence_frameclustering(tstart:tend-1)
+%             h(j) = h(j) + 1;
+%         end
+%         
+%         disp(norm(h-h2));
         
-        h = h / norm(h);
+        h = h2 / norm(h2);
         
         for i=weizmann.training_ids
             
