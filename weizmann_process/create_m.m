@@ -13,7 +13,7 @@ model.grammar.symbols(1).rule_id        = 1;
 
 model.grammar.rules(1).id      = 1;
 model.grammar.rules(1).left    = 1;
-model.grammar.rules(1).right   = [2 2 2 2 2];
+model.grammar.rules(1).right   = [2 2 2 2 2, 2 2 2 2 2, 2 2 2 2 2, 2 2 2 2 2, 2 2 2 2 2, 2 2 2 2 2];
 model.grammar.rules(1).or_rule = 0;
 model.grammar.rules(1).or_prob = [];
 
@@ -55,7 +55,7 @@ end
     
 % gen inference structure
 T  = weizmann.test.T;
-Tx = T + 1300;
+Tx = T + 300;
 m  = gen_inference_net(model, Tx, 1, 1, Tx);
 
 m.g(m.s).end_likelihood(:) = 0;

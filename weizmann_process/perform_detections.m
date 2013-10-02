@@ -36,6 +36,7 @@ for tstart=1:test.T
             d2 = histogram_intersection(h, weizmann.samples(i).hist);
             d3 = chi_square_statistics(h, weizmann.samples(i).hist);
 
+
             classid = weizmann.label_str2id.(weizmann.samples(i).class);
             
             l2_distances{classid}(tstart, tend) = min(d1, l2_distances{classid}(tstart, tend));
