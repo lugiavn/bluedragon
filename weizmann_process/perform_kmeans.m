@@ -14,7 +14,7 @@ end
 
 
 feature_vectors = uint8(feature_vectors / 100 * 255);
-[weizmann.C A] = vl_ikmeans(feature_vectors(:,1:10:end), K);
+[weizmann.C A] = vl_ikmeans(feature_vectors(:,1:1:end), K);
 
 %% k means classify
 for i=1:length(weizmann.samples)
