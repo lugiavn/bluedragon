@@ -28,19 +28,20 @@ for i=weizmann.training_ids
 
 end
 
-%% validation
-for i54457=1:10
-    validation_detection_mean_score
-    weizmann.validations(i54457) = weizmann.validation;
-    weizmann.validation          = struct;
-end
-
 %% k-means
 disp 'Perform k-means'
 weizmann = perform_kmeans(weizmann, weizmann.K, weizmann.training_ids);
 
 clearvars -except weizmann
 save data
+
+%% validation
+
+for i54457=1:10
+    validation_detection_mean_score
+    weizmann.validations(i54457) = weizmann.validation;
+    weizmann.validation          = struct;
+end
 
 
 %% compute histogram
@@ -98,6 +99,7 @@ m = create_m(weizmann);
 
 T  = weizmann.test.T;
 Tx = weizmann.test.T + 300;
+
 
 % detection
 for j=1:10

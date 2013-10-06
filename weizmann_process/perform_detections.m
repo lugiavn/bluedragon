@@ -34,7 +34,7 @@ for tstart=1:test.T
 
             d1 = norm(h - weizmann.samples(i).hist);
             d2 = histogram_intersection(h, weizmann.samples(i).hist);
-            d3 = chi_square_statistics(h, weizmann.samples(i).hist);
+            d3 = chi_square_statistics_fast(h, weizmann.samples(i).hist);
 
 
             classid = weizmann.label_str2id.(weizmann.samples(i).class);
@@ -55,17 +55,17 @@ test.x2_distances = x2_distances;
 close all;
 for i=1:10
    
-    nx_figure(i);
-    imagesc(-test.x2_distances{i});
-    hold on;
-    
-    t = find(test.sequence_framelabels == i);
-    tstart = min(t);
-    tend   = max(t);
-    
-    plot(tend, tstart, '*');
-    
-    hold off;
+%     nx_figure(i);
+%     imagesc(-test.x2_distances{i});
+%     hold on;
+%     
+%     t = find(test.sequence_framelabels == i);
+%     tstart = min(t);
+%     tend   = max(t);
+%     
+%     plot(tend, tstart, '*');
+%     
+%     hold off;
 end
 
 end
