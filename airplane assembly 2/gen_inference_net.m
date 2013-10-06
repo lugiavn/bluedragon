@@ -62,6 +62,7 @@ for i=1:length(m.grammar.symbols)
         duration_mean = m.grammar.symbols(i).learntparams.duration_mean / m.params.downsample_ratio;
         duration_var  = m.params.duration_var_scale * m.grammar.symbols(i).learntparams.duration_var / m.params.downsample_ratio^2;
         
+        
         [m.grammar.symbols(i).duration_vec, m.grammar.symbols(i).duration_mat] = make_duration_mat(duration_mean, duration_var, m.params.T);
         
         % integral
@@ -128,7 +129,9 @@ m.g(m.s).end_likelihood(end-uni_end_length+1:end)   = 1 / uni_end_length;
 
 %% set up detection result
 for i=unique([m.g.detector_id])
-    m.detection.result{i} = ones(m.params.T);
+    if i > 0
+        m.detection.result{i} = ones(m.params.T);
+    end
 end;
 
 disp 'Generating inference network is successful'

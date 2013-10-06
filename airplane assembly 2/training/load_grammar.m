@@ -35,8 +35,14 @@ while ~feof(fid)
         left_id = find(strcmp({grammar.symbols.name}, tokens{1}));
     end;
     if isempty(left_id)
+        
+        % ----- add new symbol
         left_id = length(grammar.symbols) + 1;
-        grammar.symbols(left_id).name = tokens{1};
+        
+        grammar.symbols(left_id).name                        = tokens{1};
+        grammar.symbols(left_id).detector_id                 = nan;
+        grammar.symbols(left_id).manual_params.duration_mean = nan;
+        grammar.symbols(left_id).manual_params.duration_var  = nan;
     end
     grammar.symbols(left_id).is_terminal = 0;
     
@@ -48,7 +54,6 @@ while ~feof(fid)
         if length(tokens) == 4
             grammar.symbols(left_id).manual_params.duration_mean = str2num(tokens{3});
             grammar.symbols(left_id).manual_params.duration_var  = str2num(tokens{4});
-            
         end
         
         continue;
@@ -58,10 +63,16 @@ while ~feof(fid)
     right_ids = [];
     for k=3:2:length(tokens)
         rid = find(strcmp({grammar.symbols.name}, tokens{k}));
+        
+        % ----- add new symbol
         if isempty(rid)
             rid = length(grammar.symbols) + 1;
-            grammar.symbols(rid).name = tokens{k};
-            grammar.symbols(rid).is_terminal = 1;
+            
+            grammar.symbols(rid).name                        = tokens{k};
+            grammar.symbols(rid).is_terminal                 = 1;
+            grammar.symbols(rid).detector_id                 = nan;
+            grammar.symbols(rid).manual_params.duration_mean = nan;
+            grammar.symbols(rid).manual_params.duration_var  = nan;
         end
         right_ids(end+1) = rid;
     end
@@ -83,6 +94,16 @@ end
 
 
 fclose(fid);
+
+%% more symbol info
+for i=1:length(grammar.symbols)
+    if ~grammar.symbols(i).is_terminal
+        grammar.symbols(i).prule = grammar.rules(grammar.symbols(i).rule_id);
+    end
+    
+    grammar.name2id.(grammar.symbols(i).name) = i;
+end
+
 
 %% print grammar
 disp '------------ print grammar rules'

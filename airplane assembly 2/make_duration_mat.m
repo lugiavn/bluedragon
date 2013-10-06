@@ -2,6 +2,13 @@
 function [duration duration_mat] = make_duration_mat(mean, var, T)
 
 duration = nxmakegaussian(T, mean+1, var);
+disp('[toremove] hard code min in make_duration_mat');
+if mean > 10
+    min_dur  = 7;
+    duration(1:min_dur-1) = duration(1:min_dur-1) * 0.001;
+    duration = duration / sum(duration);
+    assert(abs(sum(duration) - 1) < 10e-5);
+end;
 
 if nargout > 1
     duration_mat  = zeros(T, T);

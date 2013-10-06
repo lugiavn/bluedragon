@@ -7,7 +7,7 @@ assert(size(img, 3) == 3 && size(color, 3) == 3);
 cc1 = color(1:end/3);
 cc2 = color(end/3+1:end/3*2);
 cc3 = color(end/3*2+1:end);
-id = find(cc1 > 0.005 | cc2 > 0.005 | cc3 > 0.005);
+id = find(cc1 > 0.1 | cc2 > 0.1 | cc3 > 0.1);
 
 [h w dummy] = size(img);
 

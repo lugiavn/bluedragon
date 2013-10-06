@@ -5,8 +5,7 @@ function f = nxmakegaussian(N, mean, var)
 f = zeros(1, N);
 
 if var == 0
-    f(mean) = 1;
-    return;
+    var = 0.001;
 end
 
 for i=1:N
