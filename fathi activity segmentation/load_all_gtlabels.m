@@ -3,7 +3,14 @@
 
 clc; clear; close all;
 
-test_set = [3, 4, 7, 8, 16, 17, 18];
+test_set = [3, 4, 7, 8, 16, 17, 18]; 
+% 17 is making peanut-butter and jelly sandwitch
+% 16 is making cheease-sandwitch
+
+labels = {'S1_coffee', 'S1_peanut', 'S2 coffee', 'S2_peanut', 's1_hotdog', 's1_tea', 's2_hotdog', 's2_tea', 's3_coffee', 's3_hotdog'};
+{'S3_peanut', 's3_tea', 's1_cheese', 's1 pealate', 's1_cofhoney', 's2_cheese', 's3_pealate', 's2_cofhoney', 's4_coffee', 's4_peanut'};
+{'s4_hotdog', 's4_tea', 's4_cheese', 's4_pealate', 's4_cofhoney', 's3_cheese', 's3_pealate', 's3_cofhoney'};
+
 
 ACTION_NULL_ID = 63;
 
@@ -61,7 +68,7 @@ end
 
 disp(['Test result : ' num2str(right_count / (right_count + wrong_count))]);
 
-colors = [0 0 0; rand(1000,3)];
+colors = [0 0 0; rand(63,3); 0 0 0];
 nx_figure(1); imagesc(gt_labels); xlabel('gt labels');
 colormap (colors);
 nx_figure(2); imagesc(testresult_labels); xlabel('testresult labels');
@@ -148,12 +155,12 @@ if sequences(i).test
         for j=1:length(actions)-2
             detection_result = ones(T) * 1;
             for thestart=1:T
-                detection_result(thestart,:) = detection_result(thestart,:) * detection_before(j, thestart*2);
+                detection_result(thestart,:) = detection_result(thestart,:) * detection_before(j, thestart*2) .^ 7;
             end
             for theend=1:T
-                detection_result(:,theend) = detection_result(:,theend) * detection_after(j, theend*2);
+                detection_result(:,theend) = detection_result(:,theend) * detection_after(j, theend*2) .^ 7;
             end
-            
+            detection_result = p_f(detection_result) ;
             detection_means{j} = [detection_means{j}; detection_result(:)];
         end
 end
@@ -180,6 +187,7 @@ if sequences(i).test
     
     for h=1:sequencenum
     if ~sequences(h).test
+%     if h == i
 
         % find str
         str = sequences(h).str_gt;
@@ -219,14 +227,15 @@ if sequences(i).test
         detection_after  = load(['data/Matrix_' num2str(i) '_after']);
         detection_after  = detection_after.timeSeriesA;
         for j=1:length(actions)-2
-            m.detection.result{j}    = ones(T) * 1;
+            m.detection.result{j} = ones(T) * 1;
             for thestart=1:T
-                m.detection.result{j}(thestart,:) = m.detection.result{j}(thestart,:) * detection_before(j, thestart*2);
+                m.detection.result{j}(thestart,:) = m.detection.result{j}(thestart,:) * detection_before(j, thestart*2) .^ 7;
             end
             for theend=1:T
-                m.detection.result{j}(:,theend) = m.detection.result{j}(:,theend) * detection_after(j, theend*2);
+                m.detection.result{j}(:,theend) = m.detection.result{j}(:,theend) * detection_after(j, theend*2) .^ 7;
             end
 
+            m.detection.result{j} = p_f(m.detection.result{j});
 %             m.detection.result{j} = exp(m.detection.result{j});
 %             m.detection.result{j} = m.detection.result{j} - min(m.detection.result{j}(:));
 %             m.detection.result{j} = m.detection.result{j} / mean(m.detection.result{j}(:));
@@ -236,16 +245,19 @@ if sequences(i).test
         % gogogo
         m = m_inference_v3(m);
         nx_figure(131);
-%         m_plot_distributions(m, {'12', '17'}, {});
+
+        m_plot_distributions(m, {'1', '2','15','16', '17'}, {});
 
         % segmentation
         my_str = zeros(1, floor(length(sequences(i).frames) / 2));
 
         for g=m.g(2:end)
+            
             [mymax, maxid] = max(g.i_final.start_distribution);
             my_str(maxid:end) = g.detector_id;
-%             maxid = g.i_final.start_distribution .* [1:T];
-%             maxid = floor(sum(maxid));
+             
+            maxid = g.i_final.start_distribution .* [1:T];
+            maxid = floor(sum(maxid));
             my_str(maxid:end) = g.detector_id;
         end
         

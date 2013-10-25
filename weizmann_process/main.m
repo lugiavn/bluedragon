@@ -100,7 +100,7 @@ disp 'Saved'
 m = create_m(weizmann);
 
 T  = weizmann.test.T;
-Tx = weizmann.test.T + 300;
+Tx = weizmann.test.T + 10;
 
 % 
 % detection

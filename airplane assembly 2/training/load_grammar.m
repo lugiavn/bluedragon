@@ -60,21 +60,34 @@ while ~feof(fid)
     end
     
     % get right
-    right_ids = [];
+    right_ids   = [];
+    right_probs = [];
     for k=3:2:length(tokens)
-        rid = find(strcmp({grammar.symbols.name}, tokens{k}));
         
+        or_prob = 1;
+        thename = tokens{k};
+        findat  = find(thename == '@');
+        if length(findat) == 1
+            or_prob = str2num(thename(findat+1:end));
+            thename = thename(1:findat-1);
+        end
+
+        rid = find(strcmp({grammar.symbols.name}, thename));
         % ----- add new symbol
         if isempty(rid)
             rid = length(grammar.symbols) + 1;
             
-            grammar.symbols(rid).name                        = tokens{k};
+            
+            grammar.symbols(rid).name                        = thename;
             grammar.symbols(rid).is_terminal                 = 1;
             grammar.symbols(rid).detector_id                 = nan;
             grammar.symbols(rid).learntparams.duration_mean = nan;
             grammar.symbols(rid).learntparams.duration_var  = nan;
         end
+        
         right_ids(end+1) = rid;
+        right_probs(end+1) = or_prob;
+        
     end
     
     % rule
@@ -86,7 +99,7 @@ while ~feof(fid)
     if length(tokens) >= 4 && strcmp(tokens{4}, 'or')
         n = (length(tokens) - 1) / 2;
         grammar.rules(end).or_rule = 1;
-        grammar.rules(end).or_prob = ones(1, n) / n; 
+        grammar.rules(end).or_prob = right_probs / sum(right_probs);
     end
     
     grammar.symbols(left_id).rule_id = grammar.rules(end).id;

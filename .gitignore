@@ -9,6 +9,12 @@
 *.avi
 *.mp4
 
+# image
+*.bmp
+*.jpg
+*.png
+*.
+
 # misc
 *.doc
 *~

@@ -217,6 +217,12 @@ function m = forward_phase( m , gid )
         assert(0);
     end
 
+    % for debug
+    if ~isreal(g.i_forward.end_distribution(1)) || isnan(g.i_forward.end_distribution(1))
+        disp(gid);
+        assert(0);
+    end
+    
 end
 
 
