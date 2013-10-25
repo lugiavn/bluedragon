@@ -236,7 +236,7 @@ if sequences(i).test
         % gogogo
         m = m_inference_v3(m);
         nx_figure(131);
-        m_plot_distributions(m, {'12', '17'}, {});
+%         m_plot_distributions(m, {'12', '17'}, {});
 
         % segmentation
         my_str = zeros(1, floor(length(sequences(i).frames) / 2));

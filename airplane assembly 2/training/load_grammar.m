@@ -41,8 +41,8 @@ while ~feof(fid)
         
         grammar.symbols(left_id).name                        = tokens{1};
         grammar.symbols(left_id).detector_id                 = nan;
-        grammar.symbols(left_id).manual_params.duration_mean = nan;
-        grammar.symbols(left_id).manual_params.duration_var  = nan;
+        grammar.symbols(left_id).learntparams.duration_mean = nan;
+        grammar.symbols(left_id).learntparams.duration_var  = nan;
     end
     grammar.symbols(left_id).is_terminal = 0;
     
@@ -52,8 +52,8 @@ while ~feof(fid)
         grammar.symbols(left_id).detector_id = str2num(tokens{2});
         
         if length(tokens) == 4
-            grammar.symbols(left_id).manual_params.duration_mean = str2num(tokens{3});
-            grammar.symbols(left_id).manual_params.duration_var  = str2num(tokens{4});
+            grammar.symbols(left_id).learntparams.duration_mean = str2num(tokens{3});
+            grammar.symbols(left_id).learntparams.duration_var  = str2num(tokens{4});
         end
         
         continue;
@@ -71,8 +71,8 @@ while ~feof(fid)
             grammar.symbols(rid).name                        = tokens{k};
             grammar.symbols(rid).is_terminal                 = 1;
             grammar.symbols(rid).detector_id                 = nan;
-            grammar.symbols(rid).manual_params.duration_mean = nan;
-            grammar.symbols(rid).manual_params.duration_var  = nan;
+            grammar.symbols(rid).learntparams.duration_mean = nan;
+            grammar.symbols(rid).learntparams.duration_var  = nan;
         end
         right_ids(end+1) = rid;
     end

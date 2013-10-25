@@ -38,6 +38,10 @@ for i=unique(weizmann.test.sequence_framelabels)
     model.grammar.symbols(end).learntparams.duration_mean = mean(weizmann.durations{i});
     model.grammar.symbols(end).learntparams.duration_var  = var(weizmann.durations{i}) ;
     
+%     if i >= 6
+%         model.grammar.symbols(end).learntparams.duration_var  = 10^10 ;
+%     end
+    
     model.grammar.rules(2).right(end+1) = length(model.grammar.symbols);
 end
 
