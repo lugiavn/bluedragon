@@ -1,13 +1,16 @@
 
-function [] = m_plot_distributions(m, start_symbols, end_symbols, scale_max)
+function [] = m_plot_distributions(m, start_symbols, end_symbols, scale_max, actions)
 
     if ~exist('scale_max')
         scale_max = 1;
     end
 
+    timepoints = (1:m.params.T) * m.params.downsample_ratio;
+    timepoints = 1:m.params.T;
+    
     cla
     hold on;
-    linestyle = 0;
+    linestyle = 1;
     for action = start_symbols
         d = m.grammar.symbols(actionname2symbolid(action{1}, m.grammar)).start_distribution;
         
@@ -16,11 +19,11 @@ function [] = m_plot_distributions(m, start_symbols, end_symbols, scale_max)
         end
         
         if linestyle == 0
-            plot(d, 'color', nxtocolor(sum(action{1})), 'LineWidth', 1)
+            plot(timepoints, d, 'color', nxtocolor(sum(action{1})), 'LineWidth', 1)
         elseif linestyle == 1
-            plot(d, 'color', nxtocolor(sum(action{1})), 'LineWidth',2, 'LineStyle', '--')
+            plot(timepoints, d, 'color', nxtocolor(sum(action{1})), 'LineWidth',2, 'LineStyle', '--')
         elseif linestyle == 2
-            plot(d, 'color', nxtocolor(sum(action{1})), 'LineWidth',3, 'LineStyle', ':')
+            plot(timepoints, d, 'color', nxtocolor(sum(action{1})), 'LineWidth',3, 'LineStyle', ':')
         end
         
         linestyle = mod(linestyle+1,2);
@@ -30,8 +33,21 @@ function [] = m_plot_distributions(m, start_symbols, end_symbols, scale_max)
         if scale_max
             d = d / max(d) * sum(d);
         end
-        plot(d, '--', 'color', nxtocolor(sum(action{1})));
+        plot(timepoints, d, '--', 'color', nxtocolor(sum(action{1})));
     end
+    
+    
+    % for cvpr exp
+    if exist('actions')
+        hold on;
+        for a=actions
+        if ismember(a.name, start_symbols)
+            plot(a.start / 9, 0.1, 'color', nxtocolor(sum(a.name)), 'MarkerFaceColor', nxtocolor(sum(a.name)), 'Marker', 'v', 'MarkerSize', 10);
+        end
+        end
+        hold off;
+    end
+    
     
     % modify to add bin
     disp('[toremove] modifly m_plot_distributions');

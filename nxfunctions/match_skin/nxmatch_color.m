@@ -1,4 +1,4 @@
-function diff = match_color(img, color)
+function diff = nxmatch_color(img, color)
 %MATCH_COLOR Summary of this function goes here
 %   Detailed explanation goes here
 

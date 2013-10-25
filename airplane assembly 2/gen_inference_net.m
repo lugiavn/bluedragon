@@ -35,7 +35,7 @@ m                               = model; clearvars model;
 m.params.T                      = T;
 m.params.compute_terminal_joint = 1;
 m.params.downsample_ratio       = downsample_ratio;
-m.params.duration_var_scale     = 5;
+m.params.duration_var_scale     = 1;
 m.params.use_start_conditions   = 0;
 
 m.params.fake_dummmy_step_before_terminal = 0;
