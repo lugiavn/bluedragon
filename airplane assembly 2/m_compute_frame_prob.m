@@ -6,8 +6,9 @@ function m = m_compute_frame_prob( m )
 
 assert(m.params.compute_terminal_joint > 0);
 T = m.params.T;
-probs = zeros(length(m.g), T);
 
+%% compiled grammar symbol prob
+probs = nan(length(m.g), T);
 
 for i=1:length(m.g)
 if m.g(i).is_terminal
@@ -17,7 +18,9 @@ if m.g(i).is_terminal
         
     %disp(m.g(i).i_final.prob_notnull);
     
-    for t=1:T-10
+%     for t=1:T-10
+    for t=1:T
+        
         probs(i,t) = sum(sum(joint(1:t,t+1:end)));
     end
     
@@ -26,13 +29,46 @@ end
 
 m.frame_prob = probs';
 
-% grammar symbol prob
+%% for composition
+m = m_compute_frame_prob_for_composition(m, m.s)
+
+
+%% original grammar symbol prob
 m.frame_symbol_prob = zeros(T, length(m.grammar.symbols));
 for i=1:length(m.g)
-if m.g(i).is_terminal
+% if m.g(i).is_terminal
     m.frame_symbol_prob(:,m.g(i).id) = m.frame_symbol_prob(:,m.g(i).id) + m.frame_prob(:,i);
-end
+% end
 end
 
 end
+
+
+function m = m_compute_frame_prob_for_composition(m, id)
+
+    if m.g(id).is_terminal
+        return;
+    end
+    
+    prob = zeros(1, m.params.T);
+    
+    for i=m.g(id).prule
+        m = m_compute_frame_prob_for_composition(m, i);
+        prob = prob + m.frame_prob(:,i)';
+    end
+
+    m.frame_prob(:,id) = prob';
+end
+
+
+
+
+
+
+
+
+
+
+
+
 

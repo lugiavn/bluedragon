@@ -23,7 +23,7 @@ if i ~= 333
     else
 
         if missing_detections
-            v = 0.2;
+            v = 0.1;
         else
             v = 0.01;
         end

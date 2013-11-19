@@ -17,7 +17,11 @@ while 1
     batch_data{end+1} = test.filename;
     batch_data{end+1} = segmentation_acc;
     
+<<<<<<< HEAD
     if batch_main_i >= 2
+=======
+    if batch_main_i >= 100
+>>>>>>> 66926bf25b736e65e976a13202a80bfb75043ee2
         break;
     end
 end
@@ -46,6 +50,7 @@ for i=b
     disp([names{i} '            ' num2str(accs(i))]);
 end
 
+disp(mean(accs));
 % s1_1_a1.avi   0.7
 % 
 % s1_2_c1.avi   0.8

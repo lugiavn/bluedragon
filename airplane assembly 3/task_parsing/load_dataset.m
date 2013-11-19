@@ -1,7 +1,10 @@
 
 %% init
+<<<<<<< HEAD
 data.path = '/home/namvo/airplane assembly 3/real_dataset';
 data.FPS  = 30;
+=======
+>>>>>>> 66926bf25b736e65e976a13202a80bfb75043ee2
 
 %% read the grammar
 

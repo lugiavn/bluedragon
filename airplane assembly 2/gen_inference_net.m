@@ -101,8 +101,9 @@ while 1
         m.g(end).prule      = r.right; % todo
         m.g(end).prule      = length(x) + [1:length(r.right)];
         m.g(end).andrule    = ~r.or_rule;
-        m.g(end).orweights  = r.or_prob;
-        
+        if r.or_rule
+            m.g(end).orweights  = r.or_prob;
+        end
         x = [x r.right];
     end
     

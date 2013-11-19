@@ -5,7 +5,7 @@ downsample_ratio          = 9;
 T                         = round(6000 / downsample_ratio);
 m                         = struct;
 m.grammar                 = data.grammar;
-m                         = gen_inference_net(m, T, downsample_ratio, 100);
+m                         = gen_inference_net(m, T, downsample_ratio, 120);
 
 % structure for detection result
 m.detection = struct;

@@ -15,7 +15,8 @@ while 1
     
     batch_main_i = batch_main_i + 1;
     batch_data{end+1} = {test, ms};
-    if batch_main_i >= 100
+
+    if batch_main_i >= 10
         break;
     end
 end

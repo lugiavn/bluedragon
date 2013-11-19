@@ -1,7 +1,11 @@
 clear; clc; close all
 
 load batch_ms;
+<<<<<<< HEAD
 %%
+=======
+
+>>>>>>> 66926bf25b736e65e976a13202a80bfb75043ee2
 total_lerrors   = nan(length(batch_data), 100);
 total_entropies = nan(length(batch_data), 100);
 total_model_cs  = nan(length(batch_data), 100);
@@ -16,8 +20,12 @@ for i11=1:length(batch_data)
     entropies = nan(1, length(ms));
     model_cs  = nan(1, length(ms));
     
+<<<<<<< HEAD
 %     for t=1:length(ms)
     for t=1:test.length / ms{1}.params.downsample_ratio
+=======
+    for t=1:length(ms)
+>>>>>>> 66926bf25b736e65e976a13202a80bfb75043ee2
         
         m = ms{t};
         if isempty(m)
@@ -36,7 +44,11 @@ for i11=1:length(batch_data)
             estimated_timing = sum([1:m.params.T] .* d);
             
             lerror = lerror + abs(estimated_timing - real_timing);
+<<<<<<< HEAD
             entropy = entropy + sum(d(d > 0) .* (-log(d(d>0))));
+=======
+            entropy = entropy + sum(d(d > 0) .* log(d(d>0)));
+>>>>>>> 66926bf25b736e65e976a13202a80bfb75043ee2
         end
         
         lerror = lerror / length(test.label.actions);

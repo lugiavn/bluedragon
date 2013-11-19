@@ -152,6 +152,7 @@ function m = forward_phase( m , gid )
             assert(0);
         end
         
+        
     elseif g.andrule
     %% and rule
     

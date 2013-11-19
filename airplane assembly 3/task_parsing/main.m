@@ -4,6 +4,8 @@ clear; close all; clc;
 %% load dataset
 data = struct;
 data.downsample_ratio = 9;
+data.path = './../real_dataset';
+data.FPS  = 30;
 
 load_dataset;
 
@@ -34,10 +36,21 @@ clearvars -except data;
 
 %% Test: online parsing (offline parsing is the last result from online parsing)
 
+<<<<<<< HEAD
 test = data.examples(data.rand_ids(randi([1 3]))); % choose a test sequence
 % test = data.examples(14); % choose a test sequence
 
 do_online_parsing;
 % do_offline_parsing;
+=======
+% test = data.examples(data.rand_ids(randi([1 3]))); % choose a test sequence
+test = data.examples(14); % choose a test sequence
+test = data.examples(24); % choose a test sequence
+
+do_online_parsing;
+% do_offline_parsing;
+
+
+>>>>>>> 66926bf25b736e65e976a13202a80bfb75043ee2
 
 
