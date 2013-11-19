@@ -1,70 +1,6 @@
 
 nx_figure(2); subplot(1,1,1); cla;
 
-%
-%subplot('Position', [0.01 0.01 0.2 0.2]);
-subplot('Position', [0.01 0.01 0.4 0.5]);
-try
-    imshow(structure_img);
-catch
-    structure_img = imread('structure.png');
-    imshow(structure_img);
-end
-
-rectx78.wheel   = [100 110 110 40];
-rectx78.body    = [10 180 100 30];
-rectx78.nose_ab = [284 110 100 40];
-rectx78.nose_c  = [290 247 100 40];
-
-rectx78.wing_a{1}  = [485 35 120 40];
-rectx78.tail_a{1}  = [620 35 120 40];
-rectx78.tail_a{2}  = [485 80 120 40];
-rectx78.wing_a{2}  = [620 80 120 40];
-
-rectx78.wing_b{1}  = [485 130 120 40];
-rectx78.tail_b{1}  = [620 130 120 40];
-rectx78.tail_b{2}  = [485 180 120 40];
-rectx78.wing_b{2}  = [620 180 120 40];
-
-rectx78.wing_c{1}  = [485 230 120 40];
-rectx78.tail_c{1}  = [620 230 120 40];
-rectx78.tail_c{2}  = [485 280 120 40];
-rectx78.wing_c{2}  = [620 280 120 40];
-
-rectx78.sticker = [880 130 100 40];
-
-active_rect = [0 0 1 1];
-
-action_id = find (([test.label.actions.start] <= t) .* ([test.label.actions.end] >= t));
-if length(action_id) == 1
-    actionname = test.label.actions(action_id).name;
-    actionname(find (actionname >= '1' & actionname <= '9')) = [];
-    %disp(actionname);
-    if strcmp(actionname(1:4), 'wing') | strcmp(actionname(1:4), 'tail')
-        try
-            rectx78.wing_first;
-        catch
-            if strcmp(actionname(1:4), 'wing')
-                rectx78.wing_first = 1;
-            else
-                rectx78.wing_first = 0;
-            end
-        end
-
-
-        if rectx78.wing_first
-            active_rect = rectx78.(actionname){1};
-        else
-            active_rect = rectx78.(actionname){2};
-        end
-    else
-        active_rect = rectx78.(actionname);
-    end
-end
-hold on;
-rectangle('Position', active_rect, 'LineWidth', 3, 'EdgeColor', [1 0 0]);
-
-
 % plot action label
 text(1+100, -200, 'Groundtruth Label:', 'FontSize', 16, 'BackgroundColor',[1 0.5 0.5]);
 text(1+100, 600-750, 'Current true action: ');
@@ -123,32 +59,30 @@ hold off;
 ylim([0 100]);
 
 % plot distributions
-subplot(5, 3, [5 6]);
-m_plot_distributions(m, {'body1', 'body2', 'wheel1', 'wheel2', 'sticker'}, {}, 1, test.label.actions);
-hold on; plot([timestep timestep], [0 2]); text(timestep, 1, ' Current time'); hold off;
+subplot(5, 3, [5 6 8 9]);
+m_plot_distributions(m, {'body1', 'body4', 'wheel1', 'nose_ab1', 'nose_ab4', 'wing_b1', 'wing_b4', 'tail_b1', 'tail_b4', 'sticker'}, {}, 1, test.label.actions);
+hold on; plot([timestep timestep], [0 2]); text(timestep, 1.1, ' Current time'); hold off;
 ylim([0 1.1]);
 
 
-subplot(5, 3, [8 9]);
-%m_plot_distributions(m, {'body1', 'body2', 'body3', 'body4', 'wheel1', 'wheel2', 'nose_ab1', 'nose_ab2', 'nose_ab3', 'nose_ab4', 'wing_a1', 'tail_a1', 'tail_a2', 'tail_a3'}, {});
-m_plot_distributions(m, { 'nose_ab1', 'wing_a1', 'tail_a1'}, {}, 1, test.label.actions);
-hold on; plot([timestep timestep], [0 2]); text(timestep, 1, ' Current time'); hold off;
-ylim([0 1.1]);
+% subplot(5, 3, [8 9]);
+% %m_plot_distributions(m, {'body1', 'body2', 'body3', 'body4', 'wheel1', 'wheel2', 'nose_ab1', 'nose_ab2', 'nose_ab3', 'nose_ab4', 'wing_a1', 'tail_a1', 'tail_a2', 'tail_a3'}, {});
+% m_plot_distributions(m, { 'nose_ab1', 'wing_a1', 'tail_a1'}, {}, 1, test.label.actions);
+% hold on; plot([timestep timestep], [0 2]); text(timestep, 1, ' Current time'); hold off;
+% ylim([0 1.1]);
 
-subplot(5, 3, [11 12]);
-%m_plot_distributions(m, {'body1', 'body2', 'body3', 'body4', 'wheel1', 'wheel2', 'nose_ab1', 'nose_ab2', 'nose_ab3', 'nose_ab4', 'wing_a1', 'tail_a1', 'tail_a2', 'tail_a3'}, {});
-m_plot_distributions(m, {'wing_b1', 'tail_b1'}, {}, 1, test.label.actions);
-hold on; plot([timestep timestep], [0 2]); text(timestep, 1, ' Current time'); hold off;
-ylim([0 1.1]);
-
-subplot(5, 3, [14 15]);
-%m_plot_distributions(m, {'body1', 'body2', 'body3', 'body4', 'wheel1', 'wheel2', 'nose_ab1', 'nose_ab2', 'nose_ab3', 'nose_ab4', 'wing_a1', 'tail_a1', 'tail_a2', 'tail_a3'}, {});
-m_plot_distributions(m, {'nose_c1', 'wing_c1', 'tail_c1'}, {}, 1, test.label.actions);
-hold on; plot([timestep timestep], [0 2]); text(timestep, 1, ' Current time'); hold off;
-ylim([0 1.1]);
+subplot(5, 3, [11 12 14 15]);
+m = m_compute_frame_prob(m);
+actions = {'S', 'Body', 'Wheel', 'Nose_AB', 'Nose_C', 'Wing_A', 'Tail_A', 'Wing_B', 'Tail_B', 'Wing_C', 'Tail_C', 'sticker'};
+m_plot_frame_label_distribution(m, actions);
+xlim([0 700]);
 
 hold on;
-text(100, -0.5, 'Output: Posterior distributions of primitive actions', 'FontSize', 16, 'BackgroundColor',[1 0.5 0.5]);
+plot([timestep timestep], [-100 100], 'white');
+hold off;
+
+hold on;
+text(100, 15, 'Output: distributions of every time-steps'' label', 'FontSize', 16, 'BackgroundColor',[1 0.5 0.5]);
 hold off;
 
 
