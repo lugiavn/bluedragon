@@ -1,6 +1,6 @@
 
 %% init
-data.path = './../real_dataset';
+data.path = '/home/namvo/airplane assembly 3/real_dataset';
 data.FPS  = 30;
 
 %% read the grammar
@@ -51,6 +51,18 @@ for file = dir(data.path)'
     for a=data.examples(c).label.actions
         action_id = data.grammar.name2id.(a.name);
         data.examples(c).gt_segmentation(a.start:a.end) = action_id;
+    end
+    
+    % model label
+    data.examples(c).model = 'X';
+    for a=data.examples(c).label.actions
+        if strcmp(a.name, 'wing_a1')
+            data.examples(c).model = 'A';
+        elseif strcmp(a.name, 'wing_b1')
+            data.examples(c).model = 'B';
+        elseif strcmp(a.name, 'wing_c1')
+            data.examples(c).model = 'C';
+        end
     end
 end
 

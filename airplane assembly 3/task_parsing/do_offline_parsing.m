@@ -55,7 +55,6 @@ Tx = round(test.length/data.downsample_ratio);
     
 for i=1:length(m.detection.result)
     m.detection.result{i}(Tx:end,Tx:end) = 0;
-    m.detection.result{i}(100:250,:) = 1;
 end
 
 m = m_inference_v3(m);

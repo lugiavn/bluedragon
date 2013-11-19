@@ -17,7 +17,7 @@ while 1
     batch_data{end+1} = test.filename;
     batch_data{end+1} = segmentation_acc;
     
-    if batch_main_i >= 10
+    if batch_main_i >= 2
         break;
     end
 end

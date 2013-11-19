@@ -50,6 +50,11 @@ for t=1:99999999
         end
     end
     
+    % skip timestep
+    if mod(timestep, 10) ~= 1
+        continue;
+    end
+    
     % new inference
     m = m_inference_v3(m);
     
