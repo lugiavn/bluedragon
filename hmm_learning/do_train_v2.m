@@ -1,11 +1,20 @@
 
-
 data.train_update_ids = [];
-data.train_update_ids = data.training_ids;
+
+if ~m.final_training
+    
+    sequence_to_update = data.examples(data.training_ids(randi([1 length(data.training_ids)]))).sequence_id;
+    
+    for i=data.training_ids
+        if data.examples(i).sequence_id == sequence_to_update
+            data.train_update_ids(end+1) = i;
+        end
+    end
+end
 
 %% train duration
 durations = {};
-for i=data.training_ids
+for i=setdiff(data.training_ids,data.train_update_ids)
     for a=data.examples(i).train.actions
         try
             durations{a.s_id}(end+1) = a.end - a.start + 1;
@@ -23,9 +32,9 @@ for i=1:length(m.grammar.symbols)
         assert(length(durations{i}) > 0);
         m.grammar.symbols(i).learntparams.duration_mean = mean(durations{i});
         if m.final_training
-            m.grammar.symbols(i).learntparams.duration_var  = var(durations{i}) * 4 + 100;
+            m.grammar.symbols(i).learntparams.duration_var  = var(durations{i}) * 4 + 10;
         else
-            m.grammar.symbols(i).learntparams.duration_var  = var(durations{i}) * 16 + 10000;
+            m.grammar.symbols(i).learntparams.duration_var  = var(durations{i}) * 16 + 100;
         end
     end
 end
@@ -34,7 +43,7 @@ end
 m.vdetectors = struct;
 m.vdetectors.histograms = [];
 
-for i=data.training_ids
+for i=setdiff(data.training_ids,data.train_update_ids)
     for a=data.examples(i).train.actions
         
         h = data.examples(i).i_histograms{4}(:,a.end) - data.examples(i).i_histograms{4}(:,a.start);

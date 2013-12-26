@@ -2,6 +2,7 @@ function result = compute_raw_detection_score( s, m, for_learning )
 %COMPUTE_RAW_DETECTION_SCORE Summary of this function goes here
 %   Detailed explanation goes here
 
+	
     if ~exist('for_learning')
         for_learning = 0;
     end
@@ -13,6 +14,7 @@ function result = compute_raw_detection_score( s, m, for_learning )
     end
     for t1=1:s.length
     for t2=t1:s.length
+        
 
         h = s.i_histograms{4}(:,t2) - s.i_histograms{4}(:,t1);
         h = h + 10e-3;
@@ -51,9 +53,25 @@ function result = compute_raw_detection_score( s, m, for_learning )
                     h = h + 1;
                 end;
             end;
-            v = sum(cT,2);
+            v = mean(cT,2);
             for i=1:length(m.vdetectors)
-                result{i}(t1,t2) = exp(v(i));
+                result{i}(t1,t2) = exp(v(i) * 1);
+%                 result{i}(t1,t2) = (1 / (1 + exp(-v(i))))^5;
+                if i > 6 & i <= 12
+                    result{i}(t1,t2) = exp(v(i) * 2);
+                elseif i > 12 & i <= 18
+                    result{i}(t1,t2) = exp(v(i) * 3);
+                elseif i > 18 & i <= 24
+                    result{i}(t1,t2) = exp(v(i) * 4);
+                elseif i > 24 & i <= 30
+                    result{i}(t1,t2) = exp(v(i) * 5);
+                elseif i > 30 & i <= 36
+                    result{i}(t1,t2) = exp(v(i) * 5);
+                elseif i > 36 & i <= 42
+                    result{i}(t1,t2) = exp(v(i) * 4); 
+                elseif i > 42 
+                    result{i}(t1,t2) = exp(v(i) * 2);   
+                end
             end
 %         end
     end

@@ -15,4 +15,5 @@ for k=1:length(m.vdetectors)
     end
     
     m.vdetectors(k).mean_score = mean(values);
+    m.vdetectors(k).mean_score = exp(mean(log(values)));
 end
