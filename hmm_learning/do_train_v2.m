@@ -32,16 +32,35 @@ for i=1:length(m.grammar.symbols)
         assert(length(durations{i}) > 0);
         m.grammar.symbols(i).learntparams.duration_mean = mean(durations{i});
         if m.final_training
+<<<<<<< HEAD
             m.grammar.symbols(i).learntparams.duration_var  = var(durations{i}) * 4 + 10;
         else
             m.grammar.symbols(i).learntparams.duration_var  = var(durations{i}) * 16 + 100;
+=======
+            m.grammar.symbols(i).learntparams.duration_var  = var(durations{i}) * 4 + 100;
+        else
+            m.grammar.symbols(i).learntparams.duration_var  = var(durations{i}) * 16 + 10000;
+>>>>>>> e1b4807ac9031d7b421e3ac805fce48bf1a44323
         end
     end
 end
 
 %% train detector
+<<<<<<< HEAD
 m.vdetectors = struct;
 m.vdetectors.histograms = [];
+=======
+delete('./cache/*.mat')
+
+try 
+	for i=1:length(m.vdetectors)
+        m.vdetectors(i).histograms = [];
+    end
+catch
+    m.vdetectors = struct;
+    m.vdetectors.histograms = [];
+end
+>>>>>>> e1b4807ac9031d7b421e3ac805fce48bf1a44323
 
 for i=setdiff(data.training_ids,data.train_update_ids)
     for a=data.examples(i).train.actions
@@ -57,12 +76,26 @@ for i=setdiff(data.training_ids,data.train_update_ids)
     end
 end
 
+<<<<<<< HEAD
 %% mean & var of histograms
 % for i=1:length(m.vdetectors)
 %     m.vdetectors(i).hist_mean = mean(m.vdetectors(i).histograms');
 %     m.vdetectors(i).hist_var  = cov(m.vdetectors(i).histograms');
 %     
 % end
+=======
+try
+    for i=1:length(m.vdetectors)
+        m.vdetectors(i).lamda = m.vdetectors(i).lamda;
+        m.vdetectors(i).derivative = 0;
+    end
+catch
+    for i=1:length(m.vdetectors)
+        m.vdetectors(i).lamda = 2;
+        m.vdetectors(i).derivative = 0;
+    end
+end
+>>>>>>> e1b4807ac9031d7b421e3ac805fce48bf1a44323
 
 %% train svm
 m.svm.model    = struct;
@@ -85,10 +118,14 @@ y = [];
 for i=1:length(m.svm.examples)
     y(end+1) = m.svm.examples(i).y;
 end
+<<<<<<< HEAD
 m.svm.model = svmtrain(y', [[1:length(y)]' K], '-c 100 -t 4');
 
 
 
+=======
+m.svm.model = svmtrain(y', [[1:length(y)]' K], '-c 1000 -t 4 -q');
+>>>>>>> e1b4807ac9031d7b421e3ac805fce48bf1a44323
 
 
 

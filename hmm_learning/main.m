@@ -1,5 +1,6 @@
 
 
+<<<<<<< HEAD
 % %% read all training sequences info
 % clear;
 % load d;
@@ -18,6 +19,26 @@
 
 %% read the grammar
 m.grammar = load_grammar('grammar8.txt');
+=======
+%% read all training sequences info
+clear;
+load d;
+
+data.training_ids = [];
+data.testing_ids  = [];
+for i=1:length(data.examples)
+%     if data.examples(i).class == 1 | data.examples(i).class == 2
+        if data.examples(i).sequence_id == 7 % 3, 6, 7, 8
+            data.testing_ids(end+1) = i;
+        else
+            data.training_ids(end+1) = i;
+        end
+%     end
+end
+
+%% read the grammar
+m.grammar = load_grammar('grammar135.txt');
+>>>>>>> e1b4807ac9031d7b421e3ac805fce48bf1a44323
 
 
 %% init training sequences timing
@@ -25,45 +46,100 @@ m.grammar = load_grammar('grammar8.txt');
 for i=data.training_ids
     s_id = m.grammar.name2id.(['A' num2str(data.examples(i).class)]);
     s    = m.grammar.symbols(s_id);
+    
+    % for restart
+    rights = {[]};
+    for j=s.prule.right,
+        if strcmp(m.grammar.symbols(j).name, 'restart'),
+            rights{end+1} = [];
+        else
+            rights{end}(end+1) = j;
+        end
+    end;
+    segments = [];
+    for j=1:length(rights)
+        segments = [segments [1:length(rights{j})] / length(rights{j})];
+        segments(end+1) = -1;
+    end
+    
+    
     for j=1:length(s.prule.right)
+        
         data.examples(i).train.actions(j).s_id  = s.prule.right(j);
         data.examples(i).train.actions(j).start = max(1, ceil(data.examples(i).length * (j-1) / length(s.prule.right)));
         data.examples(i).train.actions(j).end   = ceil(data.examples(i).length * j / length(s.prule.right));
+        
+        % for restart
+        if j == 1,
+            data.examples(i).train.actions(j).start  = 1;
+        else
+            data.examples(i).train.actions(j).start = data.examples(i).train.actions(j-1).end;
+        end
+        if segments(j) == -1
+            data.examples(i).train.actions(j).end = 1;
+            
+        else
+            data.examples(i).train.actions(j).end = round (segments(j) * data.examples(i).length );
+        end
     end
+    
 end
 
 save d1;
 
 %% iterate
-load d1;
+% load d1;
 
 m.final_training = 0;
 
+<<<<<<< HEAD
 for i_901=1:5
+=======
+for i_901=1:50
+>>>>>>> e1b4807ac9031d7b421e3ac805fce48bf1a44323
     
     disp(['<<<<<<<<< Round ' num2str(i_901) ' >>>>>>>>>>>>']);
     
     % re-train the model
-    do_train
+    do_train_v2;
+    
+    %
+    compute_average_detection_score;
 
     % inference for each training sequence
+<<<<<<< HEAD
     for i_352=data.train_update_ids
+=======
+    for i_423652=1:100
+    for i_352=nx_randomswap(data.train_update_ids)
+>>>>>>> e1b4807ac9031d7b421e3ac805fce48bf1a44323
          disp(['Inference on sequence ' num2str(i_352) ', class ' num2str(data.examples(i_352).class)]);
-         data.examples(i_352) = perform_inf_n_update_timing(data.examples(i_352), m);
+         [data.examples(i_352) newm] = perform_inf_n_update_timing(data.examples(i_352), m);
+         
+        %
+        temp;
+        gd_update_params;
+    end
     end
     
-    if mod(i_901, 10) == 3
-        save d2;
-    end
+    %
+    figure(99);
+    imagesc(reshape([m.vdetectors().lamda], [6 8])); colorbar;
+    pause(1);
 end
 
 save d2
 
 %% compute average detection score
-clear;
-load d2;
+% clear;
+% load d2;
+
 m.final_training = 1;
 do_train;
+<<<<<<< HEAD
+=======
+
+>>>>>>> e1b4807ac9031d7b421e3ac805fce48bf1a44323
 if 1
     compute_average_detection_score
     save d3;
@@ -75,15 +151,24 @@ end
  
 
 %% Now do recognition baby!
+<<<<<<< HEAD
 
 CResult = {};
+=======
+>>>>>>> e1b4807ac9031d7b421e3ac805fce48bf1a44323
 
+CResult = {};
+detector_scores = {};
 for i=data.testing_ids
 
     disp(['Inference on sequence ' num2str(i) ', class ' num2str(data.examples(i).class)]);
-    class = do_recognition(data.examples(i), m);
+    [class detector_scores{i} newm] = do_recognition(data.examples(i), m);
 
     CResult{end+1} = class == data.examples(i).class;
+<<<<<<< HEAD
+=======
+    
+>>>>>>> e1b4807ac9031d7b421e3ac805fce48bf1a44323
 end
 
 disp(CResult);
@@ -119,8 +204,45 @@ disp(CResult);
 % - For grammar8 sequence 7:
 % --- (1): train2
 
+<<<<<<< HEAD
 
 
 
+=======
+% - For grammar8 sequence 8:
+% --- (3): train2 vs (1) : notrain
+% - For grammar8 sequence 2:
+% --- (1): train2 vs train (0) vs notrain(0)
+
+%%
+% for i6435435=1:100
+
+% try update
+% for i=1:length(m.vdetectors)
+%     m.vdetectors(i).mean_score = log(m.vdetectors(i).mean_score) / m.vdetectors(i).lamda;
+%     m.vdetectors(i).lamda = m.vdetectors(i).lamda + 1 * m.vdetectors(i).derivative;
+%     m.vdetectors(i).derivative = 0;
+%     m.vdetectors(i).mean_score = exp(m.vdetectors(i).mean_score * m.vdetectors(i).lamda);
+% end
+% 
+% 
+% % inf
+% CResult = {};
+% detector_scores = {};
+% for i=data.testing_ids
+% 
+%     disp(['Inference on sequence ' num2str(i) ', class ' num2str(data.examples(i).class)]);
+%     [class detector_scores{i} newm] = do_recognition(data.examples(i), m);
+% 
+%     CResult{end+1} = class == data.examples(i).class;
+%     
+%     % derivative
+%     temp;
+% end
+% 
+% disp(CResult);
+% 
+% end;
+>>>>>>> e1b4807ac9031d7b421e3ac805fce48bf1a44323
 
 

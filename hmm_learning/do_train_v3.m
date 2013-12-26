@@ -1,11 +1,13 @@
 
-
 data.train_update_ids = [];
-data.train_update_ids = data.training_ids;
+
+if ~m.final_training
+    data.train_update_ids = data.training_ids(randi([1 length(data.training_ids)]));
+end
 
 %% train duration
 durations = {};
-for i=data.training_ids
+for i=setdiff(data.training_ids,data.train_update_ids)
     for a=data.examples(i).train.actions
         try
             durations{a.s_id}(end+1) = a.end - a.start + 1;
@@ -23,30 +25,18 @@ for i=1:length(m.grammar.symbols)
         assert(length(durations{i}) > 0);
         m.grammar.symbols(i).learntparams.duration_mean = mean(durations{i});
         if m.final_training
-<<<<<<< HEAD
             m.grammar.symbols(i).learntparams.duration_var  = var(durations{i}) * 4 + 100;
-=======
-            m.grammar.symbols(i).learntparams.duration_var  = var(durations{i}) * 2 + 10;
->>>>>>> e1b4807ac9031d7b421e3ac805fce48bf1a44323
         else
-            m.grammar.symbols(i).learntparams.duration_var  = var(durations{i}) * 16 + 10000;
+            m.grammar.symbols(i).learntparams.duration_var  = var(durations{i}) * 16 + 100;
         end
     end
 end
 
 %% train detector
-delete('./cache/*.mat')
+m.vdetectors = struct;
+m.vdetectors.histograms = [];
 
-try 
-	for i=1:length(m.vdetectors)
-        m.vdetectors(i).histograms = [];
-    end
-catch
-    m.vdetectors = struct;
-    m.vdetectors.histograms = [];
-end
-
-for i=data.training_ids
+for i=setdiff(data.training_ids,data.train_update_ids)
     for a=data.examples(i).train.actions
         
         h = data.examples(i).i_histograms{4}(:,a.end) - data.examples(i).i_histograms{4}(:,a.start);
@@ -57,18 +47,6 @@ for i=data.training_ids
         d_id = m.grammar.symbols(a.s_id).detector_id;
         m.vdetectors(d_id).x = 0;
         m.vdetectors(d_id).histograms(:,end+1) = h;
-    end
-end
-
-try
-    for i=1:length(m.vdetectors)
-        m.vdetectors(i).lamda = m.vdetectors(i).lamda;
-        m.vdetectors(i).derivative = 0;
-    end
-catch
-    for i=1:length(m.vdetectors)
-        m.vdetectors(i).lamda = 2;
-        m.vdetectors(i).derivative = 0;
     end
 end
 
@@ -100,9 +78,15 @@ y = [];
 for i=1:length(m.svm.examples)
     y(end+1) = m.svm.examples(i).y;
 end
-m.svm.model = svmtrain(y', [[1:length(y)]' K], '-c 100 -t 4');
+m.svm.model = svmtrain(y', [[1:length(y)]' K], '-c 100 -t 4 -q');
 
 
+%%
+delete('./cache/*.mat')
+for i=1:length(m.vdetectors)
+    m.vdetectors(i).lamda = 2;
+    m.vdetectors(i).derivative = 0;
+end
 
 
 
