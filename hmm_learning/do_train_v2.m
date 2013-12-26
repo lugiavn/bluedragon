@@ -1,11 +1,20 @@
 
-
 data.train_update_ids = [];
-data.train_update_ids = data.training_ids;
+
+if ~m.final_training
+    
+    sequence_to_update = data.examples(data.training_ids(randi([1 length(data.training_ids)]))).sequence_id;
+    
+    for i=data.training_ids
+        if data.examples(i).sequence_id == sequence_to_update
+            data.train_update_ids(end+1) = i;
+        end
+    end
+end
 
 %% train duration
 durations = {};
-for i=data.training_ids
+for i=setdiff(data.training_ids,data.train_update_ids)
     for a=data.examples(i).train.actions
         try
             durations{a.s_id}(end+1) = a.end - a.start + 1;
@@ -23,7 +32,7 @@ for i=1:length(m.grammar.symbols)
         assert(length(durations{i}) > 0);
         m.grammar.symbols(i).learntparams.duration_mean = mean(durations{i});
         if m.final_training
-            m.grammar.symbols(i).learntparams.duration_var  = var(durations{i}) * 2 + 10;
+            m.grammar.symbols(i).learntparams.duration_var  = var(durations{i}) * 4 + 100;
         else
             m.grammar.symbols(i).learntparams.duration_var  = var(durations{i}) * 16 + 10000;
         end
@@ -42,7 +51,7 @@ catch
     m.vdetectors.histograms = [];
 end
 
-for i=data.training_ids
+for i=setdiff(data.training_ids,data.train_update_ids)
     for a=data.examples(i).train.actions
         
         h = data.examples(i).i_histograms{4}(:,a.end) - data.examples(i).i_histograms{4}(:,a.start);
@@ -68,13 +77,6 @@ catch
     end
 end
 
-%% mean & var of histograms
-% for i=1:length(m.vdetectors)
-%     m.vdetectors(i).hist_mean = mean(m.vdetectors(i).histograms');
-%     m.vdetectors(i).hist_var  = cov(m.vdetectors(i).histograms');
-%     
-% end
-
 %% train svm
 m.svm.model    = struct;
 m.svm.examples = struct;
@@ -96,10 +98,7 @@ y = [];
 for i=1:length(m.svm.examples)
     y(end+1) = m.svm.examples(i).y;
 end
-m.svm.model = svmtrain(y', [[1:length(y)]' K], '-c 100 -t 4');
-
-
-
+m.svm.model = svmtrain(y', [[1:length(y)]' K], '-c 1000 -t 4 -q');
 
 
 

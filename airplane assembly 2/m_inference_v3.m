@@ -2,6 +2,16 @@ function m = m_inference_v3( m )
 %M_INFERENCE Summary of this function goes here
 %   Detailed explanation goes here
 
+    %% debug detection result
+    for i=1:length(m.detection.result)
+        if ~isempty(m.detection.result{i})
+            if ~isempty(find(~(m.detection.result{i} >= 0 & m.detection.result{i} < Inf)))
+                assert(0);
+            end
+        end
+    end
+
+    %%
     m = compute_null_likelihood(m, m.s);
 %     for i=1:length(m.g)
 %         m.g(i).or_log_othersnull_likelihood = 0;
@@ -14,8 +24,11 @@ function m = m_inference_v3( m )
             	m.g(i).obv_duration_likelihood = ...
                     m.r_settings.transform_rs_duration{m.g(i).id, m.g(i).start_rs_id, m.g(i).end_rs_id} .* ...
                     m.r_settings.detection_result_rs{m.g(i).detector_id, m.g(i).start_rs_id, m.g(i).end_rs_id};
-            else
+            elseif  m.g(i).detector_id > 0
                 m.g(i).obv_duration_likelihood = m.grammar.symbols(m.g(i).id).duration_mat .* m.detection.result{m.g(i).detector_id};
+            else
+                aname = m.grammar.symbols(m.g(i).id).name;
+                m.g(i).obv_duration_likelihood = nx_create_custom_obv_duration(aname, m);
             end
         end
     end
