@@ -1,8 +1,4 @@
-<<<<<<< HEAD
-function classes = do_recognition( s, m )
-=======
 function [classes detector_scores m] = do_recognition( s, m )
->>>>>>> e1b4807ac9031d7b421e3ac805fce48bf1a44323
 %DO_RECOGNITION Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -28,15 +24,6 @@ function [classes detector_scores m] = do_recognition( s, m )
     figure(1); clf;
     m_plot_distributions(m, fields(m.grammar.name2id)', {'S'});
     xlim([0 s.length * 1.5]);
-<<<<<<< HEAD
-    figure(2); clf;
-    for i=1:length(m.detection.result)
-        subplot(length(m.detection.result)/6, 6, i); 
-        imagesc(m.detection.result{i}); colorbar;
-        xlim([0 s.length]); ylim([0 s.length]); 
-    end;
-    pause(2);
-=======
 %     figure(2); clf;
 %     for i=1:length(m.detection.result)
 %         subplot(length(m.detection.result)/6, 6, i); 
@@ -44,7 +31,6 @@ function [classes detector_scores m] = do_recognition( s, m )
 %         xlim([0 s.length]); ylim([0 s.length]); 
 %     end;
 %     pause(2);
->>>>>>> e1b4807ac9031d7b421e3ac805fce48bf1a44323
     
     
     %% get detector score
@@ -75,26 +61,6 @@ function [classes detector_scores m] = do_recognition( s, m )
     
     %% do prediction
     classes = class;
-<<<<<<< HEAD
-    m.g(m.s).end_likelihood(:) = 1;
-    m.g(m.s).end_likelihood = m.g(m.s).end_likelihood / sum(m.g(m.s).end_likelihood);
-    for obv_ratio = [0.9:-0.1:0.1]
-        for i=1:length(m.vdetectors)
-            m.detection.result{i}(round(s.length*obv_ratio):end,round(s.length*obv_ratio):end) = 1;
-        end
-        m = m_inference_v3(m);
-        class = 0;
-        bestP = -1;
-        for i=0:5
-            P = sum(m.grammar.symbols(m.grammar.name2id.(['A' num2str(i)])).start_distribution);
-            if P > bestP
-                class = i;
-                bestP = P;
-            end
-        end
-        classes = [class classes];
-    end
-=======
 %     m.g(m.s).end_likelihood(:) = 1;
 %     m.g(m.s).end_likelihood = m.g(m.s).end_likelihood / sum(m.g(m.s).end_likelihood);
 %     for obv_ratio = [0.9:-0.1:0.1]
@@ -115,6 +81,5 @@ function [classes detector_scores m] = do_recognition( s, m )
 %     end
     
     
->>>>>>> e1b4807ac9031d7b421e3ac805fce48bf1a44323
 end
 

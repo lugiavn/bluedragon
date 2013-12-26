@@ -23,11 +23,7 @@ for i=1:length(m.grammar.symbols)
         assert(length(durations{i}) > 0);
         m.grammar.symbols(i).learntparams.duration_mean = mean(durations{i});
         if m.final_training
-<<<<<<< HEAD
-            m.grammar.symbols(i).learntparams.duration_var  = var(durations{i}) * 4 + 100;
-=======
             m.grammar.symbols(i).learntparams.duration_var  = var(durations{i}) * 2 + 10;
->>>>>>> e1b4807ac9031d7b421e3ac805fce48bf1a44323
         else
             m.grammar.symbols(i).learntparams.duration_var  = var(durations{i}) * 16 + 10000;
         end

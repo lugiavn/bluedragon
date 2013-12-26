@@ -67,7 +67,7 @@ end
 save d1;
 
 %% LEARN
-for i_462354=1:1
+for i_462354=1:3
     crf_learn;
 end
 

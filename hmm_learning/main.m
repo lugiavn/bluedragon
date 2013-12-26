@@ -1,25 +1,5 @@
 
 
-<<<<<<< HEAD
-% %% read all training sequences info
-% clear;
-% load d;
-% 
-% data.training_ids = [];
-% data.testing_ids  = [];
-% for i=1:length(data.examples)
-% %     if data.examples(i).class == 1 | data.examples(i).class == 2
-%         if data.examples(i).sequence_id == 8 % 3, 6, 7, 8
-%             data.testing_ids(end+1) = i;
-%         else
-%             data.training_ids(end+1) = i;
-%         end
-% %     end
-% end
-
-%% read the grammar
-m.grammar = load_grammar('grammar8.txt');
-=======
 %% read all training sequences info
 clear;
 load d;
@@ -38,7 +18,6 @@ end
 
 %% read the grammar
 m.grammar = load_grammar('grammar135.txt');
->>>>>>> e1b4807ac9031d7b421e3ac805fce48bf1a44323
 
 
 %% init training sequences timing
@@ -92,11 +71,7 @@ save d1;
 
 m.final_training = 0;
 
-<<<<<<< HEAD
-for i_901=1:5
-=======
 for i_901=1:50
->>>>>>> e1b4807ac9031d7b421e3ac805fce48bf1a44323
     
     disp(['<<<<<<<<< Round ' num2str(i_901) ' >>>>>>>>>>>>']);
     
@@ -107,12 +82,8 @@ for i_901=1:50
     compute_average_detection_score;
 
     % inference for each training sequence
-<<<<<<< HEAD
-    for i_352=data.train_update_ids
-=======
     for i_423652=1:100
     for i_352=nx_randomswap(data.train_update_ids)
->>>>>>> e1b4807ac9031d7b421e3ac805fce48bf1a44323
          disp(['Inference on sequence ' num2str(i_352) ', class ' num2str(data.examples(i_352).class)]);
          [data.examples(i_352) newm] = perform_inf_n_update_timing(data.examples(i_352), m);
          
@@ -136,10 +107,7 @@ save d2
 
 m.final_training = 1;
 do_train;
-<<<<<<< HEAD
-=======
 
->>>>>>> e1b4807ac9031d7b421e3ac805fce48bf1a44323
 if 1
     compute_average_detection_score
     save d3;
@@ -151,11 +119,6 @@ end
  
 
 %% Now do recognition baby!
-<<<<<<< HEAD
-
-CResult = {};
-=======
->>>>>>> e1b4807ac9031d7b421e3ac805fce48bf1a44323
 
 CResult = {};
 detector_scores = {};
@@ -165,10 +128,7 @@ for i=data.testing_ids
     [class detector_scores{i} newm] = do_recognition(data.examples(i), m);
 
     CResult{end+1} = class == data.examples(i).class;
-<<<<<<< HEAD
-=======
     
->>>>>>> e1b4807ac9031d7b421e3ac805fce48bf1a44323
 end
 
 disp(CResult);
@@ -204,11 +164,6 @@ disp(CResult);
 % - For grammar8 sequence 7:
 % --- (1): train2
 
-<<<<<<< HEAD
-
-
-
-=======
 % - For grammar8 sequence 8:
 % --- (3): train2 vs (1) : notrain
 % - For grammar8 sequence 2:
@@ -243,6 +198,5 @@ disp(CResult);
 % disp(CResult);
 % 
 % end;
->>>>>>> e1b4807ac9031d7b421e3ac805fce48bf1a44323
 
 
