@@ -20,9 +20,9 @@ for i=1:length(m.grammar.symbols)
         assert(length(durations{i}) > 0);
         m.grammar.symbols(i).learntparams.duration_mean = mean(durations{i});
         if m.final_training
-            m.grammar.symbols(i).learntparams.duration_var  = var(durations{i}) * 16 + 10000;
+            m.grammar.symbols(i).learntparams.duration_var  = var(durations{i}) * 4 + 100;
         else
-            m.grammar.symbols(i).learntparams.duration_var  = var(durations{i}) * 16 + 10000;
+            m.grammar.symbols(i).learntparams.duration_var  = var(durations{i}) * 4 + 100;
         end
     end
 end
@@ -63,7 +63,7 @@ catch
         m.vdetectors(i).mean_score  = 1;
         m.vdetectors(i).lamda       = 2;
         m.vdetectors(i).derivative  = 0;
-        m.vdetectors(i).lamda2      = 2;
+        m.vdetectors(i).lamda2      = 0;
         m.vdetectors(i).derivative2 = 0;
     end
 end

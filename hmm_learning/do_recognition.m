@@ -1,9 +1,9 @@
-function [classes detector_scores m] = do_recognition( s, m )
+function [classes m] = do_recognition( s, m )
 %DO_RECOGNITION Summary of this function goes here
 %   Detailed explanation goes here
 
     % gen inference net
-    m = gen_inference_net(m, 300, 1 , 1, 300);
+    m = gen_inference_net(m, 250, 1 , 1, 250);
     m.g(m.s).end_likelihood(:) = 0;
     m.g(m.s).end_likelihood(round (s.length)) = 1;
     
@@ -11,11 +11,11 @@ function [classes detector_scores m] = do_recognition( s, m )
     m.detection.result = compute_raw_detection_score( s, m );
     for i=1:length(m.vdetectors)
 %         
-%         x = zeros(300);
+%         x = zeros(250);
 %         x(1:60, 1:60) = imresize(m.detection.result{i}, [60 60], 'bilinear');
 %         m.detection.result{i} = x;
         
-        m.detection.result{i} = m.detection.result{i} / m.vdetectors(i).mean_score;
+%         m.detection.result{i} = m.detection.result{i} / m.vdetectors(i).mean_score;
 %         m.detection.result{i}(round(s.length/2):end,round(s.length/2):end) = 1;
     end
     
@@ -33,16 +33,6 @@ function [classes detector_scores m] = do_recognition( s, m )
 %     pause(2);
     
     
-    %% get detector score
-    detector_scores = [];
-%     for i=1:length(m.g)
-%         if m.g(i).is_terminal
-%             P = m.g(i).i_forward.start_distribution' * m.g(i).i_backward.end_likelihood;
-%             P = P / sum(sum(P));
-%             score = sum(sum(P .* m.detection.result{m.g(i).detector_id}));
-%             detector_scores(m.g(i).detector_id) = score;
-%         end
-%     end
     
     %% recognition
     class = 0;
@@ -61,24 +51,32 @@ function [classes detector_scores m] = do_recognition( s, m )
     
     %% do prediction
     classes = class;
-%     m.g(m.s).end_likelihood(:) = 1;
-%     m.g(m.s).end_likelihood = m.g(m.s).end_likelihood / sum(m.g(m.s).end_likelihood);
-%     for obv_ratio = [0.9:-0.1:0.1]
-%         for i=1:length(m.vdetectors)
+    m.g(m.s).end_likelihood(:) = 1;
+    m.g(m.s).end_likelihood = m.g(m.s).end_likelihood / sum(m.g(m.s).end_likelihood);
+    for obv_ratio = [1:-0.1:0.1]
+        
+        % update detection result
+        for i=1:length(m.vdetectors)
 %             m.detection.result{i}(round(s.length*obv_ratio):end,round(s.length*obv_ratio):end) = 1;
-%         end
-%         m = m_inference_v3(m);
-%         class = 0;
-%         bestP = -1;
-%         for i=0:5
-%             P = sum(m.grammar.symbols(m.grammar.name2id.(['A' num2str(i)])).start_distribution);
-%             if P > bestP
-%                 class = i;
-%                 bestP = P;
-%             end
-%         end
-%         classes = [class classes];
-%     end
+            m.detection.result{i}(:,round(s.length*obv_ratio):end) = 1;
+            m.detection.result{i}(round(s.length*obv_ratio):end,:) = 1;
+        end
+        
+        % run inference
+        m = m_inference_v3(m);
+        
+        % classifiy
+        class = 0;
+        bestP = -1;
+        for i=0:5
+            P = sum(m.grammar.symbols(m.grammar.name2id.(['A' num2str(i)])).start_distribution);
+            if P > bestP
+                class = i;
+                bestP = P;
+            end
+        end
+        classes = [class classes];
+    end
     
     
 end

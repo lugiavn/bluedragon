@@ -20,7 +20,7 @@ while true
             data.training_ids(end+1) = i;
         end
     end
-    main;
+    main2;
     
     % save
     global batch;

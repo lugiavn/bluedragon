@@ -44,6 +44,8 @@ function result = compute_raw_svm_score( s, m )
             v = mean(cT,2);
             for i=1:length(m.vdetectors)
                 result{i}(t1,t2) = v(i);
+%                 iii = 1 + 6 * floor( i / 6 - 0.001);
+%                 result{i}(t1,t2) = sum(cT(i,iii:iii+5)) / 5;
             end
         end
     end

@@ -1,20 +1,20 @@
 
 
-%% read all training sequences info
-clear;
-load d;
-
-data.training_ids = [];
-data.testing_ids  = [];
-for i=1:length(data.examples)
-%     if data.examples(i).class == 1 | data.examples(i).class == 2
-        if data.examples(i).sequence_id == 3 % 3, 6, 7, 8
-            data.testing_ids(end+1) = i;
-        else
-            data.training_ids(end+1) = i;
-        end
-%     end
-end
+% %% read all training sequences info
+% clear;
+% load d;
+% 
+% data.training_ids = [];
+% data.testing_ids  = [];
+% for i=1:length(data.examples)
+% %     if data.examples(i).class == 1 | data.examples(i).class == 2
+%         if data.examples(i).sequence_id == 11 % 3, 6, 7, 8
+%             data.testing_ids(end+1) = i;
+%         else
+%             data.training_ids(end+1) = i;
+%         end
+% %     end
+% end
 
 %% read the grammar
 m.grammar = load_grammar('grammar135.txt');
@@ -67,7 +67,7 @@ end
 save d1;
 
 %% LEARN
-for i_462354=1:3
+for i_462354=1:5
     crf_learn;
 end
 
@@ -75,11 +75,10 @@ save d3;
 
 %% Test
 CResult = {};
-detector_scores = {};
 for i=data.testing_ids
 
     disp(['Inference on sequence ' num2str(i) ', class ' num2str(data.examples(i).class)]);
-    [class detector_scores{i} newm] = do_recognition(data.examples(i), m);
+    [class  newm] = do_recognition(data.examples(i), m);
 
     CResult{end+1} = class == data.examples(i).class;
     

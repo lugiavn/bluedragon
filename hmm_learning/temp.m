@@ -1,5 +1,6 @@
 
 % derivative
+
 for l=1:length(newm.g)
     if newm.g(l).is_terminal
         j     = newm.g(l).detector_id;
@@ -8,6 +9,8 @@ for l=1:length(newm.g)
             continue;
         end
         
+        
+        %
         joint = newm.g(l).i_forward.joint1 .* newm.g(l).i_backward.joint2;
         joint = joint / sum(sum(joint));
         svmscores = log(newm.detection.result{j}) / m.vdetectors(j).lamda;
@@ -19,8 +22,8 @@ for l=1:length(newm.g)
         end
         E_F2 = sum(sum(joint .* svmscores)) * newm.g(l).i_final.prob_notnull;
 
-        assert(E_F1 > -10);
-        assert(E_F2 > -10);
+%         assert(E_F1 > -10);
+%         assert(E_F2 > -10);
         
         m.vdetectors(j).derivative = m.vdetectors(j).derivative + (E_F1 - E_F2);
         

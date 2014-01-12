@@ -4,11 +4,14 @@ function obv_duration = nx_create_custom_obv_duration( aname, m )
 
     if strcmp(aname, 'restart')
         
-        endpoint = find (m.g(m.s).end_likelihood == 1);
-        assert(endpoint > 0);
+%         endpoint = find (m.g(m.s).end_likelihood == 1);
+%         assert(endpoint > 0);
+%         
+%         obv_duration = zeros(m.params.T);
+%         obv_duration(endpoint,1) = 1;
         
         obv_duration = zeros(m.params.T);
-        obv_duration(endpoint,1) = 1;
+        obv_duration(:,1) = m.g(m.s).end_likelihood';
         
     else
         assert(0);
