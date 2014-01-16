@@ -1,6 +1,6 @@
 
 
-% %% read all training sequences info
+%% read all training sequences info
 % clear;
 % load d;
 % 
@@ -8,7 +8,7 @@
 % data.testing_ids  = [];
 % for i=1:length(data.examples)
 % %     if data.examples(i).class == 1 | data.examples(i).class == 2
-%         if data.examples(i).sequence_id == 11 % 3, 6, 7, 8
+%         if data.examples(i).sequence_id == 2 % 3, 6, 7, 8
 %             data.testing_ids(end+1) = i;
 %         else
 %             data.training_ids(end+1) = i;
@@ -17,6 +17,7 @@
 % end
 
 %% read the grammar
+m.params.downsample_ratio = 2;
 m.grammar = load_grammar('grammar135.txt');
 
 

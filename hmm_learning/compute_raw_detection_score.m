@@ -11,7 +11,6 @@ function result = compute_raw_detection_score( s, m, for_learning )
     
     for i=1:length(m.vdetectors)
         result{i} = exp(result{i} * m.vdetectors(i).lamda) * exp(0.1 * m.vdetectors(i).lamda2);
-       
     end
 
 end

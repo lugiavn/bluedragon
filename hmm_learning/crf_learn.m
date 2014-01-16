@@ -22,7 +22,7 @@ end
 m.final_training = 1;
 data.train_update_ids = [];
 do_train_vx;
-compute_average_detection_score
+% compute_average_detection_score
 
 %% learn lamda
 if 1
@@ -31,19 +31,24 @@ if 1
         
         
         disp(['Inference on sequence ' num2str(i_352) ', class ' num2str(data.examples(i_352).class)]);
-        [s newm correct_classification] = perform_inf_n_update_timing(data.examples(i_352), m, 0.8);
+        [s newm correct_classification] = perform_inf_n_update_timing(data.examples(i_352), m, 0.5);
         temp;
 %         if ~correct_classification
             gd_update_params;
 %         end;
 
         %
-        figure(99);
+        nx_figure(99);
         imagesc(reshape([m.vdetectors().lamda], [6 length(m.vdetectors) / 6])); colorbar;
-        figure(199);
+        nx_figure(199);
         imagesc(reshape([m.vdetectors().lamda2], [6 length(m.vdetectors) / 6])); colorbar;
         pause(1);
-        figure(1);
+        nx_figure(1);
+        hold off;
+        m_plot_distributions(newm, fields(newm.grammar.name2id)', {'S'});
+        xlim([0 newm.params.T]);
+        ylim([0 1]);
+        pause(0.1);
         
         
         

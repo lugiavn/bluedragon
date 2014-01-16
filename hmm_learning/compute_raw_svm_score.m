@@ -11,14 +11,17 @@ function result = compute_raw_svm_score( s, m )
     
     result = {};
     
+    s_length = round(s.length / m.params.downsample_ratio);
+    
     for i=1:length(m.vdetectors)
-        result{i} = ones(m.params.T) * (-Inf);
+        result{i} = ones(s_length) * (-Inf);
     end
     
-    for t1=1:s.length
-    for t2=t1:s.length
-        
-        h = s.i_histograms{4}(:,t2) - s.i_histograms{4}(:,t1);
+    
+    for t1=1:s_length
+    for t2=t1:s_length
+        h = imresize(s.i_histograms{4}, [size(s.i_histograms{4},1) s_length], 'bilinear');
+        h = h(:,t2) - h(:,t1);
         h = h + 10e-3;
         h = h / sum(h) * min(1, sum(h) / 100);
 

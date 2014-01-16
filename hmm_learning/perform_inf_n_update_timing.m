@@ -5,62 +5,59 @@ function [s m correct_classification] = perform_inf_n_update_timing( s, m, do_ra
     if ~exist('do_random_obv_ratio')
         do_random_obv_ratio = 0;
     end;
-    
 
     % change OR
     assert(s.class >= 0 & s.class <= 5);
-    %m.grammar.symbols(m.grammar.starting).prule.or_prob(:) = 10e-10;
-    %m.grammar.symbols(m.grammar.starting).prule.or_prob(s.class+1) = 1;
-    %m.grammar.rules(1).or_prob(:) = 10e-10;
-    %m.grammar.rules(1).or_prob(s.class+1) = 1;
    
     % gen inference net
-    m = gen_inference_net(m, 250, 1 , 1, 250);
+    m.params.downsample_ratio = 2;
+    m = gen_inference_net(m, round(s.length * 2 / m.params.downsample_ratio), m.params.downsample_ratio, 1, 1);
+    
+    s_length = round(s.length / m.params.downsample_ratio);
     m.g(m.s).end_likelihood(:) = 0;
-    m.g(m.s).end_likelihood(s.length) = 1;
+    m.g(m.s).end_likelihood(s_length) = 1;
     
     % compute detection for all sequences
-    m.detection.result = compute_raw_detection_score( s, m, 1 );
+    m.detection.result = compute_raw_detection_score( s, m );
     for i=1:length(m.vdetectors)
-%         m.detection.result{i} = m.detection.result{i} / m.vdetectors(i).mean_score;
+        x = m.detection.result{i};
+        if size(m.detection.result{i}, 1) > s.length
+            x = x(1:s.length,1:s.length);
+        end
+        x = imresize(x, [s_length s_length], 'bilinear');
+        m.detection.result{i} = zeros(m.params.T);
+        m.detection.result{i}(1:s_length, 1:s_length) = x;
     end
     
     % obv ratio
     if rand < do_random_obv_ratio
-        m = m_change_obv_ratio(m, s, rand);
+        if rand < 0.9
+            m = m_change_obv_ratio(m, s, rand);
+        else
+            m = m_change_obv_ratio(m, s, 1);
+        end
     end
     
     % perform inference
     m = m_inference_v3(m);
-	hold off;
-    m_plot_distributions(m, fields(m.grammar.name2id)', {'S'});
-    xlim([0 s.length * 1.5]);
-	ylim([0 1]);
-    pause(0.1);
     
     % update new timings
+    if ~do_random_obv_ratio | 1
     for i=1:length(s.train.actions)
         s_id = s.train.actions(i).s_id;
         
         % old
 		start_distribution = m.grammar.symbols(s_id).start_distribution / sum(m.grammar.symbols(s_id).start_distribution);
 		end_distribution   = m.grammar.symbols(s_id).end_distribution / sum(m.grammar.symbols(s_id).end_distribution);
-        new_start = round(sum(start_distribution .* [1:m.params.T]));
-        new_end   = round(sum(end_distribution .* [1:m.params.T]));
+        new_start = round(sum(start_distribution .* [1:m.params.T]) * m.params.downsample_ratio);
+        new_end   = round(sum(end_distribution .* [1:m.params.T]) * m.params.downsample_ratio);
+        new_end   = min(new_end, s.length);
         
         disp(sprintf('Update %s from %d, %d to %d, %d', m.grammar.symbols(s_id).name, s.train.actions(i).start, s.train.actions(i).end, new_start, new_end));
         s.train.actions(i).start = new_start;
         s.train.actions(i).end = new_end;
-        
-%         % new
-%         for g=m.g
-%         if g.id == s_id
-%             j = g.i_forward.joint1 *  g.i_backward.joint2;
-%             j = j / sum(sum(j));
-%             [s.train.actions(i).start s.train.actions(i).end] = find (j == max(j(:)));
-%         end
-%         end
     end
+    end;
     
     % recognition
     class = 0;
