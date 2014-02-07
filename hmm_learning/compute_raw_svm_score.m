@@ -2,7 +2,7 @@ function result = compute_raw_svm_score( s, m )
 %COMPUTE_RAW_DETECTION_SCORE Summary of this function goes here
 %   Detailed explanation goes here
 
-    matfile = ['./cache/' strrep(s.filename, '.avi', '.svmscores.mat')];
+    matfile = ['./cache/' s.filename '.svmscores.mat'];
     
     if exist(matfile)
         load(matfile, 'result');
@@ -12,6 +12,7 @@ function result = compute_raw_svm_score( s, m )
     result = {};
     
     s_length = round(s.length / m.params.downsample_ratio);
+    s_length = min(50, s_length);
     
     for i=1:length(m.vdetectors)
         result{i} = ones(s_length) * (-Inf);

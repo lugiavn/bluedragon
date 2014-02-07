@@ -1,5 +1,9 @@
 
 % derivative
+for i987576=1:length(m.vdetectors)
+    m.vdetectors(i987576).derivative = 0;
+    m.vdetectors(i987576).derivative2 = 0;
+end
 
 for l=1:length(newm.g)
     if newm.g(l).is_terminal

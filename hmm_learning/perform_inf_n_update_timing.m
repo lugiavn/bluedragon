@@ -7,27 +7,12 @@ function [s m correct_classification] = perform_inf_n_update_timing( s, m, do_ra
     end;
 
     % change OR
-    assert(s.class >= 0 & s.class <= 5);
+    assert(s.class >= 0 & s.class <= 16);
    
     % gen inference net
-    m.params.downsample_ratio = 2;
-    m = gen_inference_net(m, round(s.length * 2 / m.params.downsample_ratio), m.params.downsample_ratio, 1, 1);
-    
+    m = gen_m_inf( s, m );
+%     s_length = min(s.length, m.params.downsample_length);
     s_length = round(s.length / m.params.downsample_ratio);
-    m.g(m.s).end_likelihood(:) = 0;
-    m.g(m.s).end_likelihood(s_length) = 1;
-    
-    % compute detection for all sequences
-    m.detection.result = compute_raw_detection_score( s, m );
-    for i=1:length(m.vdetectors)
-        x = m.detection.result{i};
-        if size(m.detection.result{i}, 1) > s.length
-            x = x(1:s.length,1:s.length);
-        end
-        x = imresize(x, [s_length s_length], 'bilinear');
-        m.detection.result{i} = zeros(m.params.T);
-        m.detection.result{i}(1:s_length, 1:s_length) = x;
-    end
     
     % obv ratio
     if rand < do_random_obv_ratio
@@ -62,7 +47,7 @@ function [s m correct_classification] = perform_inf_n_update_timing( s, m, do_ra
     % recognition
     class = 0;
     bestP = -1;
-    for i=0:5
+    for i=m.classes
         P = sum(m.grammar.symbols(m.grammar.name2id.(['A' num2str(i)])).start_distribution);
         if P > bestP
             class = i;

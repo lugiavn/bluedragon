@@ -3,30 +3,15 @@ function [classes m] = do_recognition( s, m )
 %   Detailed explanation goes here
 
     % gen inference net
-    m.params.downsample_ratio = 2;
-    m = gen_inference_net(m, round(s.length * 2 / m.params.downsample_ratio), m.params.downsample_ratio, 1, 1);
-    
+    m = gen_m_inf( s, m );
+%     s_length = min(s.length, m.params.downsample_length);
     s_length = round(s.length / m.params.downsample_ratio);
-    m.g(m.s).end_likelihood(:) = 0;
-    m.g(m.s).end_likelihood(s_length) = 1;
-    
-    % compute detection for all sequences
-    m.detection.result = compute_raw_detection_score( s, m );
-    for i=1:length(m.vdetectors)
-        x = m.detection.result{i};
-        if size(m.detection.result{i}, 1) > s.length
-            x = x(1:s.length,1:s.length);
-        end
-        x = imresize(x, [s_length s_length], 'bilinear');
-        m.detection.result{i} = zeros(m.params.T);
-        m.detection.result{i}(1:s_length, 1:s_length) = x;
-    end
     
     % perform inference
     m = m_inference_v3(m);
     figure(1); clf;
     m_plot_distributions(m, fields(m.grammar.name2id)', {'S'});
-    xlim([0 s_length * 1.9]);
+    xlim([0 s_length * 2]);
 %     figure(2); clf;
 %     for i=1:length(m.detection.result)
 %         subplot(length(m.detection.result)/6, 6, i); 
@@ -40,7 +25,7 @@ function [classes m] = do_recognition( s, m )
     %% recognition
     class = 0;
     bestP = -1;
-    for i=0:5
+    for i=m.classes
         P = sum(m.grammar.symbols(m.grammar.name2id.(['A' num2str(i)])).start_distribution);
         if P > bestP
             class = i;
@@ -64,12 +49,12 @@ function [classes m] = do_recognition( s, m )
             m.detection.result{i}(:,round(s_length*obv_ratio)+1:end) = 1;
             m.detection.result{i}(round(s_length*obv_ratio)+1:end,:) = 1;
             
-            for j=1:round(s_length*obv_ratio)
-                o = [round(s_length*obv_ratio)+1:m.params.T] - j;
-                o = (round(s_length*obv_ratio) - j) ./ o;
-                o = o * 0.8;
-                m.detection.result{i}(j,round(s_length*obv_ratio)+1:end) = (1 - o) * 1 + o * m.detection.result{i}(j,round(s_length*obv_ratio));
-            end
+%             for j=1:round(s_length*obv_ratio)
+%                 o = [round(s_length*obv_ratio)+1:m.params.T] - j;
+%                 o = (round(s_length*obv_ratio) - j) ./ o;
+%                 o = o * 0.8;
+%                 m.detection.result{i}(j,round(s_length*obv_ratio)+1:end) = (1 - o) * 1 + o * m.detection.result{i}(j,round(s_length*obv_ratio));
+%             end
         end
         
         % run inference
@@ -78,7 +63,7 @@ function [classes m] = do_recognition( s, m )
         % classifiy
         class = 0;
         bestP = -1;
-        for i=0:5
+        for i=m.classes
             P = sum(m.grammar.symbols(m.grammar.name2id.(['A' num2str(i)])).start_distribution);
             if P > bestP
                 class = i;
