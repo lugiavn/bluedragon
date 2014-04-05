@@ -186,7 +186,7 @@ for i=GTEA.testing_ids
         
 %         detection_result{i,id} = detection_result{i,id} * 1 * 10 - 9;
 %         detection_result{i,id} = 1 ./ (1 + exp(-detection_result{i,id}));
-        
+%         detection_result{i,id} = exp(10 * detection_result{i,id});
     end
 
 end
@@ -203,6 +203,7 @@ for i=1:length(GTEA.id2name)-1
     end
     if ~isempty(d)
         GTEA.mean_detection_score(i) = mean(d);
+        GTEA.mean_detection_score(i) = exp(mean(log(d))) * (0.5 + rand / 2);
     end
 end
 
@@ -254,7 +255,8 @@ for i=16
         
 %         m.detection.result{id} = m.detection.result{id} * 1 * 10 - 9;
 %         m.detection.result{id} = 1 ./ (1 + exp(-m.detection.result{id}));
-        
+%         m.detection.result{id} = exp(10 * m.detection.result{id});
+
         m.detection.result{id} = m.detection.result{id} / GTEA.mean_detection_score(id);
         
     end
@@ -264,7 +266,13 @@ for i=16
     m = m_compute_frame_prob(m);
     
     % segmentation
-    [~, segmentation] = max(m.frame_symbol_prob(1:T,:)');
+    frame_symbol_prob = m.frame_symbol_prob(1:T,:)';
+    for i5523=1:length(m.grammar.symbols)
+        if ~m.grammar.symbols(i5523).is_terminal
+            frame_symbol_prob(i5523,:) = 0;
+        end
+    end
+    [~, segmentation] = max(frame_symbol_prob);
     
     % map label
     segmentation2 = zeros(1, T);

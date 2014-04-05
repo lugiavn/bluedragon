@@ -2,7 +2,7 @@
 clear; clc;
 global batch;
 batch           = struct;
-batch.i         = 1;
+batch.i         = 6;
 batch.loopnum   = 10;
 batch.CResults  = {};
 

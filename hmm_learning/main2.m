@@ -1,18 +1,18 @@
 
 
-% % read all training sequences info
-% clear;
-% load d;
-% 
-% data.training_ids = [];
-% data.testing_ids  = [];
-% for i=1:length(data.examples)
-%     if data.examples(i).sequence_id == 1 % 3, 6, 7, 8
-%         data.testing_ids(end+1) = i;
-%     else
-%         data.training_ids(end+1) = i;
-%     end
-% end
+% read all training sequences info
+clear;
+load d;
+
+data.training_ids = [];
+data.testing_ids  = [];
+for i=1:length(data.examples)
+    if data.examples(i).sequence_id == 9 % 3, 6, 7, 8
+        data.testing_ids(end+1) = i;
+    else
+        data.training_ids(end+1) = i;
+    end
+end
 
 %% change feature
 % for i=1:length(data.examples)
@@ -74,7 +74,7 @@ end
 save d1;
 
 %% LEARN
-for i_462354=1:3
+for i_462354=1:5
     crf_learn;
 end
 
