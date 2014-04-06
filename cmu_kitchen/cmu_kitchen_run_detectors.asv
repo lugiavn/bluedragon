@@ -20,16 +20,15 @@ function detections = cmu_kitchen_run_detectors( detectors, sequence )
         sequence_integral_hist(:,end+1) = sequence_integral_hist(:,end) + sequence.histograms.MBHx(i,:)';
     end
     
-    for t1=1:1:T
-        for t2=t1:1:T
+    for t1=1:10:T
+        for t2=t1:10:T
             
-            h = sequence_integral_hist(:,t2+1) - sequence_integral_hist(:,t1);
+            h = sequence_integral_hist(t2,:) - sequence_integral_hist(t1,:);
             h = h / (0.01 + sum(h));
-            h = repmat(h, [1 length(detectors.examples)]);
+            h = repmat(h, [1 759]);
             s = h - examples;
             s = s .* s;
             s = sum(s, 1);
-            s = s .^ 0.5;
             s = (1 - s) .^ 2;
             
             for i=1:length(detectors.examples)
