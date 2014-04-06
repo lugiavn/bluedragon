@@ -50,8 +50,8 @@ for i=1:length(dataset.examples)
         N = N + 1;
         elements = textscan(line, '%d %d %s');
 
-        labels(N).start = elements{1};
-        labels(N).end   = elements{2};
+        labels(N).start = single(elements{1});
+        labels(N).end   = single(elements{2});
         labels(N).text  = elements{3}{1};
 
     end

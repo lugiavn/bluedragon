@@ -83,29 +83,28 @@ fprintf(fileID, grammar_str);
 fclose(fileID);
 
 clearvars -except dataset
+save d3 -v7.3
 
 
 %% compute detection mean
 
-detectors  = cmu_kitchen_train_detectors(dataset.examples(2:end));
-detections = cmu_kitchen_run_detectors(detectors, dataset.examples(1));
+% detectors  = cmu_kitchen_train_detectors(dataset.examples(2:end));
+% detections = cmu_kitchen_run_detectors(detectors, dataset.examples(1));
+% 
+% for i=1:dataset.primitive_action_num
+%     
+%     detections = [];
+%     
+%     detections(end+1) = 1;
+%     for e=dataset.examples
+%         for l=e.labels
+%             
+%         end
+%     end
+%     
+%     dataset.training.detection_means(i) = exp(mean(log(detections)));
+% end
 
-for i=1:dataset.primitive_action_num
-    
-    detections = [];
-    
-    detections(end+1) = 1;
-    for e=dataset.examples
-        for l=e.labels
-            
-        end
-    end
-    
-    dataset.training.detection_means(i) = exp(mean(log(detections)));
-end
-
-clearvars -except dataset
-save d3 -v7.3
 
 %% inference
 
