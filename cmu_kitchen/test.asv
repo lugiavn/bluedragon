@@ -1,0 +1,12 @@
+
+
+i = 1;
+
+imagesc(data{i}.p)
+
+hold on;
+
+for l=dataset.examples(i).labels
+    
+    start = nx_linear_scale_to_range(i.start, 1, e.video_length, 1, 1000);
+end

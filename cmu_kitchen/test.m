@@ -1,12 +1,27 @@
 
 
-l = dataset.examples(1).labels(20);
-T = dataset.examples(1).video_length;
+i = 8;
 
-t1 = nx_linear_scale_to_range(single(l.start), 1, T, 1, 1000);
-t2 = nx_linear_scale_to_range(single(l.end), 1, T, 1, 1000);
+imagesc(data{i}.p); colormap gray;
 
-imagesc(detections{l.id}(1:1:end,1:1:end) .^ 15);
 hold on;
-plot(t2, t1, '*');
+
+for l=dataset.examples(i).labels
+    
+    start = nx_linear_scale_to_range(l.start, 1, dataset.examples(i).video_length, 1, 1000);
+    send  = nx_linear_scale_to_range(l.end, 1, dataset.examples(i).video_length, 1, 1000);
+    
+    aid = l.id + 13;
+    
+    
+    for j=1:length(m.grammar.symbols)
+        if m.grammar.symbols(j).detector_id == l.id
+            aid = j;
+        end
+    end;
+    
+    plot([start send], [aid aid]);
+end
+
+
 hold off;
