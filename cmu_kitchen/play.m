@@ -8,7 +8,7 @@ e = dataset.examples(9); % 3 (9), 5 (13), 9 is wrong
 % 5 (13): top video is not synced
 % 9 ():  top video is not synced
 
-v = VideoReader(e.video_path);
+v  = VideoReader(e.video_path);
 v2 = VideoReader(e.top_video);
 
 for t=5000:5:6000
