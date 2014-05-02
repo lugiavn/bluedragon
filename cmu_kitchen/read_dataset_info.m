@@ -1,6 +1,6 @@
 
 dataset = struct;
-dataset.path =  'D:/myr/datasets/activity/cmu_kitchen';
+dataset.path =  '/media/xPassport2/myr/datasets/activity/cmu_kitchen';
 
 %% read file name
 icount = 0;
@@ -127,6 +127,17 @@ end
 
 dataset.primitive_action_num = icount;
 
+
+%% map time
+
+for i=1:length(dataset.examples)
+    e = dataset.examples(i);
+    for j=1:length(e.labels)
+        l = e.labels(j);
+        dataset.examples(i).labels(j).start_map = round(nx_linear_scale_to_range(l.start, 1, e.video_length, 1, 1000));
+        dataset.examples(i).labels(j).end_map   = round(nx_linear_scale_to_range(l.end, 1, e.video_length, 1, 1000));
+    end
+end
 
 
 

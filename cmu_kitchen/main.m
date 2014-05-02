@@ -20,6 +20,9 @@ for i=1:length(dataset.examples)
         e = dataset.examples(i);
         l = dataset.examples(i).labels(j);
         
+        load(['histograms/' num2str(i) '.mat']);
+        e.histograms = histograms;
+        
         dnames = fields(e.histograms);
         for u=1:length(dnames)
             
