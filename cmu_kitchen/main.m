@@ -12,6 +12,10 @@
 
 clear;
 load d2;
+for i=1:length(dataset.examples)
+    load(['histograms/' num2str(i) '.mat']);
+	dataset.examples(i).histograms = histograms;   
+end
 
 %% compute hists
 for i=1:length(dataset.examples)
@@ -19,6 +23,9 @@ for i=1:length(dataset.examples)
         
         e = dataset.examples(i);
         l = dataset.examples(i).labels(j);
+        
+        load(['histograms/' num2str(i) '.mat']);
+        e.histograms = histograms;
         
         dnames = fields(e.histograms);
         for u=1:length(dnames)
@@ -70,7 +77,7 @@ for j=1:dataset.primitive_action_num
 
         load(['./cache/detections' num2str(i) '.mat']);
 
-        d = detections{j} .^ 40;
+        d = detections{j} .^ 1;
         
         v = [v; d(d > 0)];
     end
@@ -92,8 +99,9 @@ for testing_id = 1:13
     data{testing_id}.testing_id = testing_id;
       
     dataset.training_ids = testing_id;
-    make_cmu_kitchen_grammar 
     dataset.training_ids = setdiff(1:length(dataset.examples), testing_id); 
+    
+    make_cmu_kitchen_grammar 
     pause(10);
     run_testing;
     
@@ -110,24 +118,6 @@ for testing_id = 1:13
    
 end
 
-
-%% stat
-
-
-Z    = 0;
-acc1 = 0;
-acc2 = 0;
-
-for i=1:length(data)
-    e = dataset.examples(i);
-    T = e.labels(end).end - e.labels(1).start;
-    Z = Z + T;
-    acc1 = acc1 + data{i}.acc1 * T;
-    acc2 = acc2 + data{i}.acc2 * T;
-end
-
-disp(acc1 / Z);
-disp(acc2 / Z);
 
 
 

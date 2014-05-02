@@ -6,7 +6,7 @@ e = dataset.examples(randi([1 length(dataset.examples)]));
 e = dataset.examples(7); % 3 (9), 5 (13), 9 is wrong
 
 
-v = VideoReader(e.video_path);
+v  = VideoReader(e.video_path);
 v2 = VideoReader(e.top_video);
 
 for t=500:600

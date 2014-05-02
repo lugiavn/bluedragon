@@ -12,7 +12,7 @@ function detectors = cmu_kitchen_train_detectors( sequences )
                 detectors.examples = l;
             end
             
-            detectors.examples(end).histograms{4} = detectors.examples(end).histograms{4} / (0.01 + sum(detectors.examples(end).histograms{4}));
+            detectors.examples(end).histograms{2} = detectors.examples(end).histograms{2} / (0.01 + sum(detectors.examples(end).histograms{2}));
         end
     end
     

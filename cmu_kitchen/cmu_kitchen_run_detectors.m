@@ -11,13 +11,13 @@ function detections = cmu_kitchen_run_detectors( detectors, sequence )
     
     examples = [];
     for e=detectors.examples
-        examples(:,end+1) = e.histograms{4};
+        examples(:,end+1) = e.histograms{2};
     end
     
     
     sequence_integral_hist = zeros(4000,1);
-    for i=1:size(sequence.histograms.MBHx,1)
-        sequence_integral_hist(:,end+1) = sequence_integral_hist(:,end) + sequence.histograms.MBHx(i,:)';
+    for i=1:size(sequence.histograms.HOG,1)
+        sequence_integral_hist(:,end+1) = sequence_integral_hist(:,end) + sequence.histograms.HOG(i,:)';
     end
     
     for t1=1:1:T
