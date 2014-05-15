@@ -1,59 +1,44 @@
-function m = m_inference_v3( m )
+function m = m_inference_v4( m )
 %M_INFERENCE Summary of this function goes here
 %   Detailed explanation goes here
 
+    m = compute_null_likelihood(m, m.s);
+    
     %% debug detection result
     for i=1:length(m.detection.result)
         if ~isempty(m.detection.result{i})
-            if ~isempty(find(~(m.detection.result{i} >= 0 & m.detection.result{i} < Inf)))
+            if ~check_valid_data(m.detection.result{i})
                 assert(0);
             end
         end
     end
 
-    %%
-    m = compute_null_likelihood(m, m.s);
-%     for i=1:length(m.g)
-%         m.g(i).or_log_othersnull_likelihood = 0;
-%     end;
-    
     % compute P(end | start) * P( Z | start, end)
     for i=1:length(m.g)
         if m.g(i).is_terminal
-            if isfield(m, 'r_settings')
-            	m.g(i).obv_duration_likelihood = ...
-                    m.r_settings.transform_rs_duration{m.g(i).id, m.g(i).start_rs_id, m.g(i).end_rs_id} .* ...
-                    m.r_settings.detection_result_rs{m.g(i).detector_id, m.g(i).start_rs_id, m.g(i).end_rs_id};
-            elseif  m.g(i).detector_id > 0
+            if  m.g(i).detector_id > 0
                 m.g(i).obv_duration_likelihood = m.grammar.symbols(m.g(i).id).duration_mat .* m.detection.result{m.g(i).detector_id};
             else
                 aname = m.grammar.symbols(m.g(i).id).name;
                 m.g(i).obv_duration_likelihood = nx_create_custom_obv_duration(aname, m);
             end
             
-            isinvalid = sum(sum(isnan(m.g(i).obv_duration_likelihood) + isinf(m.g(i).obv_duration_likelihood)));
-            if isinvalid
+            if ~check_valid_data(m.g(i).obv_duration_likelihood)
                 assert(0);
             end
         end
     end
     
 
-    % forward phase
+    %% forward phase
     m.g(m.s).i_forward.start_distribution = m.g(m.s).start_distribution;
-    if isfield(m, 'r_settings')
-        m.g(m.s).i_forward.start_distribution = m.r_settings.start_distribution;
-    end
     m = forward_phase(m, m.s);
     
-    % backward phase
+    %% backward phase
     m.g(m.s).i_backward.end_likelihood = m.g(m.s).end_likelihood;
-    if isfield(m, 'r_settings')
-        m.g(m.s).i_backward.end_likelihood = m.r_settings.end_likelihood;
-    end
     m = backward_phase(m, m.s);
 
-    % merge forward & backward
+    %% merge forward & backward
     for i=1:length(m.g)
         try
         g = m.g(i);
@@ -63,21 +48,42 @@ function m = m_inference_v3( m )
         g.i_final.end_distribution   = g.i_final.end_distribution / sum(g.i_final.end_distribution);
         g.i_final.start_distribution = g.i_final.start_distribution / sum(g.i_final.start_distribution);
         
-        assert(isreal(g.i_final.end_distribution(1)));
-        assert(isreal(g.i_final.start_distribution(1)));
+        assert(check_valid_data(g.i_final.end_distribution));
+        assert(check_valid_data(g.i_final.start_distribution));
         
-        m.g(i) = g;
         catch
             disp(sprintf('merge forward & backward fail for g %d', i));
+            
+            try
+                g.i_final.end_distribution = log(g.i_forward.end_distribution) + log(g.i_backward.end_likelihood);
+                g.i_final.end_distribution = g.i_final.end_distribution - max(g.i_final.end_distribution);
+                g.i_final.end_distribution = exp(g.i_final.end_distribution);
+                g.i_final.end_distribution = g.i_final.end_distribution / sum(g.i_final.end_distribution);
+                
+                g.i_final.start_distribution = log(g.i_forward.start_distribution) + log(g.i_backward.start_likelihood);
+                g.i_final.start_distribution = g.i_final.start_distribution - max(g.i_final.start_distribution);
+                g.i_final.start_distribution = exp(g.i_final.start_distribution);
+                g.i_final.start_distribution = g.i_final.start_distribution / sum(g.i_final.start_distribution);
+                
+                
+                assert(check_valid_data(g.i_final.end_distribution));
+                assert(check_valid_data(g.i_final.start_distribution));
+                
+            catch
+                disp(sprintf('merge forward & backward fail for g %d 2ND TIME', i));
+            end
         end
+        
+        m.g(i) = g;
+        
     end
     
     
-    % compute happening prob
+    %% compute happening prob
     m.g(m.s).i_final.prob_notnull = 1;
     m = compute_prob_notnull(m, m.s);
 
-    % compute symbol distribution
+    %% compute symbol distribution
     m.grammar.symbols = calculate_symbol_distribution(m, m.grammar.symbols);
 end
 
@@ -119,6 +125,7 @@ function m = compute_null_likelihood( m, gid )
         end
     end
 
+
 end
 
 %%
@@ -129,37 +136,18 @@ function m = forward_phase( m , gid )
     
     g = m.g(gid);
     
-    if ~isreal(g.i_forward.start_distribution(1)) || isnan(g.i_forward.start_distribution(1))
+    if ~check_valid_data(g.i_forward.start_distribution)
         disp(gid);
         assert(0);
     end
     
-    %% intergrate start condition
-    if m.params.use_start_conditions,
-        
-        if isfield(m, 'r_settings')
-            g.i_forward.start_distribution  = start_condition_probability_forward(g.i_forward.start_distribution , m.r_settings.start_conditions_rs{gid,g.start_rs_id});
-        else
-            g.i_forward.start_distribution  = start_condition_probability_forward(g.i_forward.start_distribution , m.start_conditions(g.id,:));
-        end
-        
-        if ~isnan(m.params.trick.fakedummystep(1)) & g.is_terminal
-            if size(m.params.trick.fakedummystep, 1) == 1
-                g.i_forward.start_distribution = conv(g.i_forward.start_distribution, m.params.trick.fakedummystep);
-                g.i_forward.start_distribution = g.i_forward.start_distribution(1:m.params.T);
-            else
-                g.i_forward.start_distribution = g.i_forward.start_distribution * m.params.trick.fakedummystep;
-            end
-        end
-    end
-    
-    if g.is_terminal
     %% terminal
-        
+    if g.is_terminal
+    
         p =  g.i_forward.start_distribution * g.obv_duration_likelihood;
-        p(p < 0) = 0;
+        % p(p < 0) = 0;
         
-        g.i_forward.log_pZ = log(sum(p));
+        g.i_forward.log_pZ = log(sum(p)) ;
         g.i_forward.end_distribution = p / sum(p);
         
         if m.params.compute_terminal_joint
@@ -204,21 +192,14 @@ function m = forward_phase( m , gid )
         
         
         % 
-        if isfield(m, 'r_settings')
-            g.i_forward.end_distribution = zeros(1, m.r_settings.rs{g.end_rs_id}.T);
-        else
-            g.i_forward.end_distribution = zeros(1, m.params.T);
-        end
+        g.i_forward.end_distribution = zeros(1, m.params.T);
+        g.i_forward.log_pZ           = 0;
         
         for i=g.prule
-            g.i_forward.end_distribution = g.i_forward.end_distribution + ...
-                m.g(i).or_orweight * ...
-                exp(m.g(i).i_forward.log_pZ + m.g(i).or_log_othersnull_likelihood) * ...
-                rs_transform(m, m.g(i).i_forward.end_distribution, m.g(i).end_rs_id, g.end_rs_id);
+            [g.i_forward.end_distribution g.i_forward.log_pZ] = sum_in_log(g.i_forward.end_distribution, g.i_forward.log_pZ, ...
+                m.g(i).or_orweight * m.g(i).i_forward.end_distribution, m.g(i).i_forward.log_pZ);
         end
         
-        g.i_forward.log_pZ = log(sum(g.i_forward.end_distribution));
-        g.i_forward.end_distribution = g.i_forward.end_distribution / sum(g.i_forward.end_distribution);
     end
 
     % for debug
@@ -249,6 +230,8 @@ function m = backward_phase( m, gid )
 
     g  = m.g(gid);
     
+    g.i_backward.log_pZ = nan;
+    
     if ~isreal(g.i_backward.end_likelihood(1))
         assert(0);
     end
@@ -256,7 +239,13 @@ function m = backward_phase( m, gid )
     %% terminal
     if g.is_terminal
         
-        g.i_backward.start_likelihood = g.i_backward.end_likelihood * g.obv_duration_likelihood';
+        p = g.i_backward.end_likelihood * g.obv_duration_likelihood';
+        
+        g.i_backward.log_pZ = log(sum(p));
+        
+        p = p / sum(p);
+        
+        g.i_backward.start_likelihood = p;
         
         if m.params.compute_terminal_joint
             %g.i_backward.joint2 = g.obv_duration_likelihood .* repmat(g.i_backward.end_likelihood, [m.params.T 1]);
@@ -269,21 +258,16 @@ function m = backward_phase( m, gid )
         current_likelihood = g.i_backward.end_likelihood;
         current_rs_id      = g.end_rs_id;
         
+        g.i_backward.log_pZ = 0;
+        
         for i=g.prule(end:-1:1)
             
             m.g(i).i_backward.end_likelihood = rs_transform_likelihood(m, current_likelihood, current_rs_id, m.g(i).end_rs_id);
             m = backward_phase(m, i);
-            current_likelihood = m.g(i).i_backward.start_likelihood;
-            current_rs_id      = m.g(i).start_rs_id;
+            g.i_backward.log_pZ = g.i_backward.log_pZ + m.g(i).i_backward.log_pZ;
+            current_likelihood  = m.g(i).i_backward.start_likelihood;
+            current_rs_id       = m.g(i).start_rs_id;
             
-            % start condition
-            if m.params.use_start_conditions,
-                if ~isfield(m, 'r_settings')    
-                	current_likelihood = start_condition_likelihood_backward(current_likelihood, m.start_conditions(m.g(i).id,:));
-                else
-                    current_likelihood = start_condition_likelihood_backward(current_likelihood, m.r_settings.start_conditions_rs{m.g(i).id, current_rs_id});
-                end
-            end
         end
         
         g.i_backward.start_likelihood = rs_transform_likelihood(m, current_likelihood, current_rs_id, g.start_rs_id);
@@ -298,59 +282,21 @@ function m = backward_phase( m, gid )
             
         end
         
-        if isfield(m, 'r_settings')
-            g.i_backward.start_likelihood = zeros(1, m.r_settings.rs{g.start_rs_id}.T);
-        else
-            g.i_backward.start_likelihood = zeros(1, m.params.T);
-        end
         
-        if ~m.params.use_start_conditions,
-            for i=g.prule
-                g.i_backward.start_likelihood = g.i_backward.start_likelihood  + ...
-                    m.g(i).or_orweight * ...
-                    exp(m.g(i).or_log_othersnull_likelihood) * ...
-                    rs_transform_likelihood(m, m.g(i).i_backward.start_likelihood, m.g(i).start_rs_id, g.start_rs_id);
-            end
+        g.i_backward.start_likelihood = zeros(1, m.params.T);
+        g.i_backward.log_pZ           = 0;
+        
+        for i=g.prule
+            [g.i_backward.start_likelihood g.i_backward.log_pZ] = sum_in_log(g.i_backward.start_likelihood, g.i_backward.log_pZ, ...
+                m.g(i).or_orweight * m.g(i).i_backward.start_likelihood, m.g(i).i_backward.log_pZ);
         end
-        if m.params.use_start_conditions && ~isfield(m, 'r_settings'),
-            g.i_backward.start_likelihood = zeros(1, m.params.T);
-            for i=g.prule
-                g.i_backward.start_likelihood = g.i_backward.start_likelihood  + ...
-                    m.g(i).or_orweight * ...
-                    exp(m.g(i).or_log_othersnull_likelihood) * ...
-                    start_condition_likelihood_backward(m.g(i).i_backward.start_likelihood, m.start_conditions(m.g(i).id,:));
-            end
-        end
-        if m.params.use_start_conditions && isfield(m, 'r_settings'),
-            for i=g.prule
-                g.i_backward.start_likelihood = g.i_backward.start_likelihood  + ...
-                    m.g(i).or_orweight * ...
-                    exp(m.g(i).or_log_othersnull_likelihood) * ...
-                    rs_transform_likelihood(m, start_condition_likelihood_backward(m.g(i).i_backward.start_likelihood, m.r_settings.start_conditions_rs{m.g(i).id, m.g(i).start_rs_id}), m.g(i).start_rs_id, g.start_rs_id);
-                   
-            end
-        end
+
     end
 
     
-    %% debug
-    if isfield(m, 'r_settings')
-        g.i_backward.start_debug = vrts_upsample_likelihood(g.i_backward.start_likelihood, m.r_settings.rs{g.start_rs_id});
-        g.i_backward.end_debug   = vrts_upsample_likelihood(g.i_backward.end_likelihood, m.r_settings.rs{g.end_rs_id});
-        g.i_backward.start_debug = g.i_backward.start_debug / max(g.i_backward.start_debug);
-        g.i_backward.end_debug   = g.i_backward.end_debug / max(g.i_backward.end_debug);
-        
-        
-%         plot(g.i_backward.end_debug);
-%         hold on; plot(g.i_backward.start_debug, 'r'); hold off;
-    else
-%         plot(g.i_backward.end_likelihood / max(g.i_backward.end_likelihood));
-%         hold on; plot(g.i_backward.start_likelihood / max(g.i_backward.start_likelihood), 'r'); hold off;
-    end
+
     
     m.g(gid) = g;
-    
-    
     
     % for debug
     if ~check_valid_data(g.i_backward.start_likelihood)
@@ -385,17 +331,29 @@ function m = compute_prob_notnull( m, gid )
         
         s = [];
         
+        max_log_pZ = -inf;
+        
+        for i=m.g(gid).prule
+            max_log_pZ = max(m.g(i).i_forward.log_pZ, max_log_pZ);
+        end
+        
+        
         for i=m.g(gid).prule
             
-            log_notnull = log(m.g(i).or_orweight) + m.g(i).i_forward.log_pZ + m.g(i).or_log_othersnull_likelihood - m.g(gid).i_forward.log_pZ;
-            m.g(i).i_final.prob_notnull = m.g(gid).i_final.prob_notnull * exp(log_notnull);
-            
-            s(end+1) = m.g(i).i_final.prob_notnull * ...
+            s(end+1) =  m.g(i).or_orweight * exp(m.g(i).i_forward.log_pZ - max_log_pZ) * ...
                 sum(m.g(i).i_backward.end_likelihood .* m.g(i).i_forward.end_distribution);
             
         end
         
+        try
+        assert(check_valid_data(s));
         s = m.g(gid).i_final.prob_notnull * s / sum(s);
+        assert(check_valid_data(s));
+        catch
+            gogo = 1;
+            assert(0);
+        end
+        
         
         for i=m.g(gid).prule
             
@@ -467,13 +425,21 @@ function v = rs_transform_likelihood(m, v, rs_from_id, rs_to_id)
     end
 end
 
+% check data >= 0 and < inf
 function isvalid = check_valid_data(data)
     check = ~((data >= 0) & (data < inf));
     isvalid = sum(sum(check)) == 0;
 end
 
 
-
+function [c logc] = sum_in_log(a, loga, b, logb)
+    
+    logc = max(loga, logb);
+    c    = a * exp(loga - logc) + b * exp(logb - logc);
+    
+    logc = logc + log(sum(c));
+    c    = c / sum(c);
+end
 
 
 

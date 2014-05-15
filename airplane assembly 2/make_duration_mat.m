@@ -17,7 +17,7 @@ if nargout > 1
         duration_mat(j,j:end) = duration(1:T-j+1);
         
         if sum(duration_mat(j,j:end)) <= 0
-            duration_mat(j,j:end) = 1;
+%             duration_mat(j,j:end) = 1;
         end
         
 %         duration_mat(j,j:end) = duration_mat(j,j:end) / sum(duration_mat(j,j:end));

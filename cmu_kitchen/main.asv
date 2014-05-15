@@ -74,7 +74,7 @@ end
 
 %% compute detection mean
 
-dataset.params.n_power = 100;
+dataset.params.n_power = 50;
 
 compute_detection_means
 
@@ -112,8 +112,8 @@ for testing_id = 1:13
    
 end
 
-clearvars -except data
-save result
+% clearvars -except data
+% save result
 
 
 

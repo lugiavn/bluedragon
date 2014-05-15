@@ -20,7 +20,11 @@ for i=1:13
         
         plot([start send], [l.id, l.id]);
         
-        for t=round (start): round (send)
+%         for t=round (start): round (send)
+        for orin_t = l.start:l.end 
+        
+            t = round (nx_linear_scale_to_range(orin_t,  1, dataset.examples(i).video_length, 1, 1000));
+            
             Z12 = Z12 + 1;
             [~, id] = max(data{i}.p2(:,t));
             if id == l.id

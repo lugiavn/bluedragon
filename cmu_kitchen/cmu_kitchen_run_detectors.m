@@ -2,6 +2,7 @@ function detections = cmu_kitchen_run_detectors( detectors, sequence )
 %CMU_KITCHEN_RUN_DETECTORS Summary of this function goes here
 %   Detailed explanation goes here
 
+    
     T = 1000;
 
     for i=1:43
@@ -23,14 +24,30 @@ function detections = cmu_kitchen_run_detectors( detectors, sequence )
     for t1=1:1:T
         for t2=t1:1:T
             
-            h = sequence_integral_hist(:,t2+1) - sequence_integral_hist(:,t1);
-            h = h / (0.01 + sum(h));
-            h = repmat(h, [1 length(detectors.examples)]);
-            s = h - examples;
-            s = s .* s;
-            s = sum(s, 1);
-            s = s .^ 0.5;
-            s = (1 - s) .^ 2;
+            
+            t33 = round((t1 * 2 + t2) / 3);
+            t66 = round((t1 + 2 * t2) / 3);
+            
+            
+            h  = sequence_integral_hist(:,t2+1) - sequence_integral_hist(:,t1);
+            h1 = sequence_integral_hist(:,t33+1) - sequence_integral_hist(:,t1);
+            h2 = sequence_integral_hist(:,t66+1) - sequence_integral_hist(:,t33);
+            h3 = sequence_integral_hist(:,t2+1) - sequence_integral_hist(:,t66);
+            
+            h = [h; h1; h2; h3];
+            
+            h = h + 0.01;
+            h = h / sum(h);
+            
+%             h = repmat(h, [1 length(detectors.examples)]);
+%             s = h - examples;
+%             s = s .* s;
+%             s = sum(s, 1);
+%             s = s .^ 0.5;
+%             s = (1 - s) .^ 2;
+
+            s = chi_square_statistics_fast(h', examples');
+            s = max(1 - s, 0);
             
             for i=1:length(detectors.examples)
                 if s(i) > detections{detectors.examples(i).id}(t1, t2) 
